@@ -4,7 +4,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette import status
 
-from routers import artitst,genre,playlist,stats,track,track_Record
+from routers import artitst,genre,playlist,stats,track,track_Record,user
 from database import engine
 import models
 
@@ -13,7 +13,7 @@ import models
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title='Statify', description='Statfy API', version='1.0.0')
-
+app.include_router(user.router)
 
 
 @app.exception_handler(RequestValidationError)

@@ -8,6 +8,8 @@ class DBUser(Base):
     UID = Column(Integer, primary_key=True)
     Name = Column(String, index=True)
     Spotify_id = Column(String, index=True)
+    Password = Column(String, index=True)
+
 
     settings_user = relationship("DBUser_Settings", back_populates="user_setting")
     track_User = relationship("DBTrack_Record", back_populates="user_track_record")
