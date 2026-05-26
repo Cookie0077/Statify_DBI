@@ -19,9 +19,11 @@ def hash_password(password: str) -> str:
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
-class UserCreate(BaseModel):
+
+class UserLogin(BaseModel):
     Name: str = Field(...)
-    Password: str = Field(...,min_length=8,max_length=72)
+    Password: str = Field(..., min_length=8, max_length=72)
+class UserCreate(UserLogin):
     Spotify_id: str =Field(...)
 
 class UserResponse(BaseModel):
@@ -41,10 +43,10 @@ class UserAPI():
         self.db.add(db_user)
         self.db.commit()
         self.db.refresh(db_user)
-        return db_user  
+        return db_user
 
     @router.post("/login", response_model=UserResponse)
-    def login(self, user: UserCreate):
+    def login(self, user: UserLogin):
         db_user = self.db.query(DBUser).filter(DBUser.Name == user.Name).first()
         if not db_user or not verify_password(user.Password, db_user.Password):
             raise HTTPException(status_code=401, detail="Ungültige Zugangsdaten")
