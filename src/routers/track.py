@@ -3,10 +3,11 @@ from pydantic import BaseModel, field_validator, Field
 from fastapi_restful.cbv import cbv
 from sqlalchemy.orm import Session
 import models
+from main import sp
 from database import get_db
 from routers.base import BaseAPI
 
-router = APIRouter(prefix="/hardware", tags=["Hardware"])
+router = APIRouter(prefix="/track", tags=["Track"])
 
 # Pydentic Schemas
 class TrackCreate(BaseModel):
@@ -29,11 +30,13 @@ class TrackAPI(BaseAPI):
 
     @router.get("/{id}", response_model=TrackResponse)
     def get_track(self, id: int):
-        return self.db.query(models.DBTrack).filter(models.DBTrack.TID == id).first()
+        return self.get_or_404(self.db, models.DBTrack, id)
 
     @router.post("/", response_model=TrackResponse)
-    def create_track(self, track: TrackCreate):
-        self.db.add(track)
-        self.db.commit()
-        self.db.refresh(models.DBTrack)
+    def add_tracks(self, listOfTracks: list[TrackCreate]):
+        # TODO: Implement - needed after track_record call
+        pass
+
+
+
         

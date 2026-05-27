@@ -5,7 +5,7 @@ from database import Base
 
 class DBUser(Base):
     __tablename__ = "Users"
-    UID = Column(Integer, primary_key=True)
+    Id = Column(Integer, primary_key=True)
     Name = Column(String, index=True)
     Spotify_id = Column(String, index=True)
     Password = Column(String, index=True)
@@ -17,7 +17,7 @@ class DBUser(Base):
 
 class DBUser_Settings(Base):
     __tablename__ = "User_Settings"
-    USID = Column(Integer, primary_key=True)
+    Id = Column(Integer, primary_key=True)
     Spotify_token = Column(String, index=True)
     Role = Column(String, index=True)
     UID = Column(Integer, ForeignKey("Users.UID"), index=True)
@@ -27,7 +27,7 @@ class DBUser_Settings(Base):
 
 class DBTrack_Record(Base):
     __tablename__ = "Track_Records"
-    TRID = Column(Integer, primary_key=True)
+    Id = Column(Integer, primary_key=True)
     Timestamp = Column(DateTime, index=True)
     Duration = Column(Float, index=True)
     UID = Column(Integer, ForeignKey("Users.UID"), index=True)
@@ -39,7 +39,7 @@ class DBTrack_Record(Base):
 
 class DBTrack(Base):
     __tablename__ = "Track"
-    TID = Column(Integer, primary_key=True)
+    Id = Column(Integer, primary_key=True)
     Spotify_id = Column(String, index=True)
     Name = Column(String, index=True)
     Image = Column(String, index=True)
@@ -52,7 +52,7 @@ class DBTrack(Base):
 
 class DBArtist(Base):
     __tablename__ = "Artists"
-    AID = Column(Integer, primary_key=True)
+    Id = Column(Integer, primary_key=True)
     Spotify_id = Column(String, index=True)
     Name = Column(String, index=True)
     Follower_count = Column(Integer, index=True)
@@ -63,7 +63,7 @@ class DBArtist(Base):
 
 class DBArtist_Genre(Base):
     __tablename__ = "Artist_Genre"
-    AGID = Column(Integer, primary_key=True)
+    Id = Column(Integer, primary_key=True)
     AID = Column(Integer, ForeignKey("Artists.AID"), index=True)
     GID = Column(Integer, ForeignKey("Genre.GID"), index=True)
 
@@ -73,7 +73,7 @@ class DBArtist_Genre(Base):
 
 class DBGenre(Base):
     __tablename__ = "Genre"
-    GID = Column(Integer, primary_key=True)
+    Id = Column(Integer, primary_key=True)
     Name = Column(String, index=True)
 
     genre_artists = relationship("DBArtist_Genre", back_populates="genre_artist")
@@ -81,7 +81,7 @@ class DBGenre(Base):
 
 class DBPlaylist_Track(Base):
     __tablename__ = "Playlist_Tracks"
-    PTID = Column(Integer, primary_key=True)
+    Id = Column(Integer, primary_key=True)
     TID = Column(Integer, ForeignKey("Track.TID"), index=True)
     PID = Column(Integer, ForeignKey("Playlists.PID"), index=True)
 
@@ -91,7 +91,7 @@ class DBPlaylist_Track(Base):
 
 class DBPlaylist(Base):
     __tablename__ = "Playlists" 
-    PID = Column(Integer, primary_key=True)
+    Id = Column(Integer, primary_key=True)
     Spotify_id = Column(String, index=True)
     Name = Column(String, index=True)
     Follower_count = Column(Integer, index=True)

@@ -17,7 +17,6 @@ sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
     scope="user-read-recently-played user-top-read playlist-read-private"
 ))
 
-# 
 sp.current_user()
 
 models.Base.metadata.create_all(bind=engine)
@@ -41,8 +40,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 @app.get("/")
 def root():
-    return sp.current_user_recently_played(limit=10)
-    #return {"Message": "Welcome to Statify go to /docs for the API"}
+    return sp.artist("0b9cSSHeOuo2622idMdVTM")
 
 
 if __name__ == "__main__":
