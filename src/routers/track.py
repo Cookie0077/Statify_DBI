@@ -3,7 +3,6 @@ from pydantic import BaseModel, field_validator, Field
 from fastapi_restful.cbv import cbv
 from sqlalchemy.orm import Session
 import models
-from main import sp
 from database import get_db
 from routers.base import BaseAPI
 
@@ -18,7 +17,7 @@ class TrackCreate(BaseModel):
 
 
 class TrackResponse(TrackCreate):
-    TID: int
+    Id: int
 
 
 @cbv(router)
