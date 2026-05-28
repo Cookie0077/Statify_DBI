@@ -7,7 +7,6 @@ class DBUser(Base):
     __tablename__ = "Users"
     Id = Column(Integer, primary_key=True)
     Name = Column(String, index=True)
-    Spotify_id = Column(String, index=True)
     Password = Column(String, index=True)
 
 

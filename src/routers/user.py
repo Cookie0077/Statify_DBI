@@ -23,13 +23,10 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 class UserLogin(BaseModel):
     Name: str = Field(...)
     Password: str = Field(..., min_length=8, max_length=72)
-class UserCreate(UserLogin):
-    Spotify_id: str =Field(...)
 
 class UserResponse(BaseModel):
-    UID: int = Field(...)
+    Id: int = Field(...)
     Name: str = Field(...)
-    Spotify_id: str = Field(...)
 
 
 @cbv(router)
@@ -37,9 +34,12 @@ class UserAPI():
     db: Session = Depends(get_db)
 
     @router.post("/register", response_model=UserResponse)
-    def register(self, user: UserCreate):
+    def register(self, user: UserLogin):
+        existing_user = self.db.query(DBUser).filter(DBUser.Name == user.Name).first()
+        if existing_user:
+            raise HTTPException(status_code=400, detail="Username bereits vergeben")
         hashed = hash_password(user.Password)
-        db_user = DBUser(Name=user.Name, Password=hashed, Spotify_id=user.Spotify_id)
+        db_user = DBUser(Name=user.Name, Password=hashed)
         self.db.add(db_user)
         self.db.commit()
         self.db.refresh(db_user)
