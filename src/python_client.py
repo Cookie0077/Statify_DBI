@@ -12,4 +12,5 @@ sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
     scope="user-read-recently-played user-top-read playlist-read-private"
 ))
 
+# TODO: das bei erfolgreichen Login/Register machen
 sp.current_user()
