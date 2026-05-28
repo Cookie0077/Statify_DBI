@@ -13,7 +13,7 @@ models.Base.metadata.create_all(bind=engine)
 app = FastAPI(title='Statify', description='Statfy API', version='1.0.0')
 app.include_router(user.router)
 app.include_router(track_Record.router)
-
+app.include_router(track.router)
 
 
 @app.exception_handler(RequestValidationError)

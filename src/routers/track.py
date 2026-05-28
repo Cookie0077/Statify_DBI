@@ -25,6 +25,7 @@ class TrackAPI(BaseAPI):
     db: Session = Depends(get_db)
     @router.get("/", response_model=list[TrackResponse])
     def get_all_tracks(self):
+        # TODO: Falls meherer user auf eine DB anders machen
         return self.db.query(models.DBTrack).all()
 
     @router.get("/{id}", response_model=TrackResponse)
