@@ -12,7 +12,7 @@ router = APIRouter(prefix="/track_record", tags=["Track-Record"])
 
 class TrackRecordCreate(BaseModel):
     Timestamp: datetime
-    Duration: float
+    Duration: int
     UID: int
     TID: int
 
@@ -21,18 +21,33 @@ class TrackRecordResponse(TrackRecordCreate):
     Id: int
     model_config = {"from_attributes": True}
 
+class TrackRecordDetailResponse(TrackRecordResponse):
+    Track_Name: str
+    Track_Image: str
+    Artist_Name: str
+
 
 @cbv(router)
 class TrackRecordAPI(BaseAPI):
     db: Session = Depends(get_db)
 
-    @router.get("/", response_model=list[TrackRecordResponse])
-    def get_all(self):
-        return self.db.query(models.DBTrack_Record).all()
+    @router.get("/{user_id}", response_model=list[TrackRecordDetailResponse])
+    def get_all(self, user_id: int):
+        tracks = self.db.query(models.DBTrack_Record).filter(models.DBTrack_Record.UID==user_id).all()
 
-    @router.get("/{id}", response_model=TrackRecordResponse)
-    def get_one(self, id: int):
-        return self.db.query(models.DBTrack_Record).filter(models.DBTrack_Record.Id == id).first()
+        result = []
+        for track in tracks:
+            result.append(TrackRecordDetailResponse(
+                Id= int(track.Id),
+                Timestamp= track.Timestamp,
+                Duration= int(track.Duration),
+                UID= int(track.UID),
+                TID= int(track.TID),
+                Track_Name=track.track_track_record.Name,
+                Track_Image=track.track_track_record.Image,
+                Artist_Name=track.track_track_record.artist_track.Name,
+            ))
+        return result
 
     @router.post("/sync/{user_id}", response_model=list[TrackRecordResponse])
     def sync_tracks(self, user_id: int):

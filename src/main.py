@@ -33,5 +33,10 @@ def root():
     return sp.current_user_recently_played(limit=1)
 
 
+@app.get("/callback")
+def callback():
+    return {"message": "Authentification was not successful."}
+
+
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8888)

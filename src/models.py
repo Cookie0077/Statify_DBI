@@ -28,7 +28,7 @@ class DBTrack_Record(Base):
     __tablename__ = "Track_Records"
     Id = Column(Integer, primary_key=True)
     Timestamp = Column(DateTime, index=True)
-    Duration = Column(Float, index=True)
+    Duration = Column(Integer, index=True)
     UID = Column(Integer, ForeignKey("Users.Id"), index=True)
     TID = Column(Integer, ForeignKey("Track.Id"), index=True)
 
