@@ -1,4 +1,6 @@
 from datetime import datetime
+from typing import Optional
+
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from fastapi_restful.cbv import cbv
@@ -32,8 +34,11 @@ class TrackRecordAPI(BaseAPI):
     db: Session = Depends(get_db)
 
     @router.get("/{user_id}", response_model=list[TrackRecordDetailResponse])
-    def get_all(self, user_id: int):
-        tracks = self.db.query(models.DBTrack_Record).filter(models.DBTrack_Record.UID==user_id).all()
+    def get_all(self, user_id: int,limit: Optional[int] = None):
+        if limit is None:
+            tracks = self.db.query(models.DBTrack_Record).filter(models.DBTrack_Record.UID==user_id).all()
+        else:
+            tracks = self.db.query(models.DBTrack_Record).filter(models.DBTrack_Record.UID == user_id).limit(limit).all()
 
         result = []
         for track in tracks:
