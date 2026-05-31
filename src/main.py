@@ -15,6 +15,7 @@ app.include_router(user.router)
 app.include_router(track_Record.router)
 app.include_router(track.router)
 
+app.include_router(artitst.router)
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):

@@ -1,10 +1,13 @@
 from datetime import datetime
 from typing import Optional
+from  collections import Counter
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from fastapi_restful.cbv import cbv
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.functions import count
+
 import models
 from database import get_db
 from routers.base import BaseAPI
@@ -27,6 +30,7 @@ class TrackRecordDetailResponse(TrackRecordResponse):
     Track_Name: str
     Track_Image: str
     Artist_Name: str
+    Playcount: int
 
 
 @cbv(router)
@@ -35,22 +39,31 @@ class TrackRecordAPI(BaseAPI):
 
     @router.get("/{user_id}", response_model=list[TrackRecordDetailResponse])
     def get_all(self, user_id: int,limit: Optional[int] = None):
-        if limit is None:
-            tracks = self.db.query(models.DBTrack_Record).filter(models.DBTrack_Record.UID==user_id).all()
-        else:
-            tracks = self.db.query(models.DBTrack_Record).filter(models.DBTrack_Record.UID == user_id).limit(limit).all()
+
+        tracks = (
+            self.db.query(
+                models.DBTrack_Record,
+                count(models.DBTrack_Record.TID).label("playcount")
+            )
+            .filter(models.DBTrack_Record.UID == user_id)
+            .group_by(models.DBTrack_Record.TID)
+            .order_by(count(models.DBTrack_Record.TID).desc())
+            .limit(limit)
+            .all()
+        )
 
         result = []
-        for track in tracks:
+        for track, playcount in tracks:
             result.append(TrackRecordDetailResponse(
-                Id= int(track.Id),
-                Timestamp= track.Timestamp,
-                Duration= int(track.Duration),
-                UID= int(track.UID),
-                TID= int(track.TID),
+                Id=int(track.Id),
+                Timestamp=track.Timestamp,
+                Duration=int(track.Duration),
+                UID=int(track.UID),
+                TID=int(track.TID),
                 Track_Name=track.track_track_record.Name,
                 Track_Image=track.track_track_record.Image,
                 Artist_Name=track.track_track_record.artist_track.Name,
+                Playcount=playcount,
             ))
         return result
 
