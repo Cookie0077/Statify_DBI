@@ -3,7 +3,7 @@ from fastapi import FastAPI,Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette import status
-from routers import artitst,genre,playlist,stats,track,track_Record,user
+from routers import artitst,playlist,track,track_Record,user
 from database import engine
 import models
 from python_client import sp

@@ -141,4 +141,3 @@ class TrackRecordAPI(BaseAPI):
         self.db.flush()  # Similar to a commit in git
         return db_track
 
-
