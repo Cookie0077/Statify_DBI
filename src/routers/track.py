@@ -3,6 +3,7 @@ from pydantic import BaseModel, field_validator, Field
 from fastapi_restful.cbv import cbv
 from sqlalchemy.orm import Session
 import models
+from auth import verify_api_key
 from database import get_db
 from routers.base import BaseAPI
 
@@ -23,6 +24,7 @@ class TrackResponse(TrackCreate):
 @cbv(router)
 class TrackAPI(BaseAPI):
     db: Session = Depends(get_db)
+    api_key: str = Depends(verify_api_key)
     @router.get("/", response_model=list[TrackResponse])
     def get_all_tracks(self):
         # TODO: Falls meherer user auf eine DB anders machen

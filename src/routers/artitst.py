@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql.functions import count
 
 import models
+from auth import verify_api_key
 from database import get_db
 from routers.base import BaseAPI
 
@@ -25,6 +26,7 @@ class ArtistResponse(ArtistCreate):
 @cbv(router)
 class Artist(BaseAPI):
     db: Session = Depends(get_db)
+    api_key:str = Depends(verify_api_key)
 
     @router.get("/{user_id}", response_model=list[ArtistResponse])
     def get_artists(self, user_id: int,limit: Optional[int] = None):

@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql.functions import count
 
 import models
+from auth import verify_api_key
 from database import get_db
 from routers.base import BaseAPI
 
@@ -36,6 +37,7 @@ class TrackRecordDetailResponse(TrackRecordResponse):
 @cbv(router)
 class TrackRecordAPI(BaseAPI):
     db: Session = Depends(get_db)
+    api_key: str = Depends(verify_api_key)
 
     @router.get("/{user_id}", response_model=list[TrackRecordDetailResponse])
     def get_all(self, user_id: int,limit: Optional[int] = None):
@@ -72,6 +74,7 @@ class TrackRecordAPI(BaseAPI):
         results = self.sp.current_user_recently_played(limit=50)
         timestamp = self.get_timestamp(user_id)
         saved = []
+        AIDs = set()
 
 
         for item in results["items"]:
@@ -83,6 +86,7 @@ class TrackRecordAPI(BaseAPI):
 
             track = item["track"]
             artist = track["artists"][0]
+
 
             db_artist = self.db.query(models.DBArtist).filter(models.DBArtist.Spotify_id == artist["id"]).first()
             db_track = self.db.query(models.DBTrack).filter(models.DBTrack.Spotify_id == track["id"]).first()
@@ -115,10 +119,12 @@ class TrackRecordAPI(BaseAPI):
             .first())
         return record.Timestamp if record else None
 
-    def make_artist(self, artist: dict):
+    def make_artist(self, artist: dict, imageurl: str = None):
         db_artist = models.DBArtist(
             Spotify_id=artist["id"],
             Name=artist["name"],
+
+
         )
         self.db.add(db_artist)
         self.db.flush()

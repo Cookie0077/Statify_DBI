@@ -4,6 +4,8 @@ from fastapi import APIRouter, HTTPException
 from fastapi.params import Depends
 from fastapi_restful.cbv import cbv
 from sqlalchemy.orm import Session
+
+from auth import verify_api_key
 from database import get_db
 from passlib.context import CryptContext
 
@@ -32,6 +34,7 @@ class UserResponse(BaseModel):
 @cbv(router)
 class UserAPI():
     db: Session = Depends(get_db)
+    api_key: str = Depends(verify_api_key)
 
     @router.post("/register", response_model=UserResponse)
     def register(self, user: UserLogin):
