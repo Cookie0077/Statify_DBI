@@ -107,7 +107,6 @@ class TrackRecordAPI(BaseAPI):
         self.db.commit() # The objects get "stale" here so python doesn't know the id of the object yet
         for record in saved:
             self.db.refresh(record) # Now it asks for everything again - so now it knows the id
-        self.sync_artists()
         return saved
 
     def get_timestamp(self, user_id: int):
@@ -118,24 +117,19 @@ class TrackRecordAPI(BaseAPI):
         return record.Timestamp if record else None
 
     def make_artist(self, artist: dict):
+        newartist = self.sp.artist(artist["id"])
+
+        image = newartist["images"][0]["url"] if newartist["images"] else None
+
         db_artist = models.DBArtist(
             Spotify_id=artist["id"],
-            Name=artist["name"]
+            Name=artist["name"],
+            Image=image
         )
         self.db.add(db_artist)
         self.db.flush()
         return db_artist
 
-    def sync_artists(self):
-        artists = self.db.query(models.DBArtist).filter(models.DBArtist.Image == None).all()
-        artist_ids = [artist.Spotify_id for artist in artists]
-
-        result = self.sp.artists(artist_ids)
-
-        for db_artist, sp_artist in zip(artists, result["artists"]):
-            db_artist.Image = sp_artist["images"][0]["url"] if sp_artist["images"] else None
-        # Like references - can just commit like this
-        self.db.commit()
 
     def make_track(self, track: dict, aid: int):
         db_track = models.DBTrack(
