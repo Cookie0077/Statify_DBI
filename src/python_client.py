@@ -12,5 +12,5 @@ sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
     scope="user-read-recently-played user-top-read playlist-read-private"
 ))
 
-# TODO: das bei erfolgreichen Login/Register machen
+# TODO: Token refreshing mby not working!?
 sp.current_user()

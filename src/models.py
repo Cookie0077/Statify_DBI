@@ -55,7 +55,8 @@ class DBArtist(Base):
     Id = Column(Integer, primary_key=True)
     Spotify_id = Column(String, index=True)
     Name = Column(String, index=True)
-    Image = Column(String, index=True)
+    Image = Column(String, index=True, nullable=True)
+
     track_artist = relationship("DBTrack", back_populates="artist_track")
     artist_genres = relationship("DBArtist_Genre", back_populates="artist_genre")
 
