@@ -74,14 +74,15 @@ class TrackRecordAPI(BaseAPI):
         results = self.sp.current_user_recently_played(limit=50)
         timestamp = self.get_timestamp(user_id)
         saved = []
-        AIDs = set()
+
+
 
 
         for item in results["items"]:
             cleanplayed_at = item["played_at"][:19] # Cut off everything after seconds
             played_at = datetime.strptime(cleanplayed_at, "%Y-%m-%dT%H:%M:%S") # Turn the string into a correct Datetime
 
-            if timestamp and played_at <= timestamp:# Check if already in db
+            if timestamp and played_at <= timestamp:
                 continue
 
             track = item["track"]
@@ -106,10 +107,9 @@ class TrackRecordAPI(BaseAPI):
             self.db.add(new_record)
             saved.append(new_record)
 
-        self.db.commit() # The objects get "stale" here so python doesn't know the id of the object yet
+        self.db.commit()
         for record in saved:
-            self.db.refresh(record) # Now it asks for everything again - so now it knows the id
-
+            self.db.refresh(record)
         return saved
 
     def get_timestamp(self, user_id: int):

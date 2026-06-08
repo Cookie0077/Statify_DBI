@@ -12,6 +12,7 @@ class DBUser(Base):
 
     settings_user = relationship("DBUser_Settings", back_populates="user_setting")
     track_User = relationship("DBTrack_Record", back_populates="user_track_record")
+    user_playlist = relationship("DBPlaylist", back_populates="playlist_user")
 
 
 class DBUser_Settings(Base):
@@ -86,13 +87,13 @@ class DBPlaylist_Track(Base):
     playlist_track = relationship("DBTrack", back_populates="track_playlist")
     playlist_playlist_track = relationship("DBPlaylist", back_populates="playlist_track")
 
-
 class DBPlaylist(Base):
     __tablename__ = "Playlists" 
     Id = Column(Integer, primary_key=True)
     Spotify_id = Column(String, index=True)
     Name = Column(String, index=True)
-    Follower_count = Column(Integer, index=True)
-    Owner = Column(String, index=True)
+    Image = Column(String, index=True)
+    UID = Column(Integer, ForeignKey("Users.Id"), index=True)
 
+    playlist_user= relationship("DBUser", back_populates="user_playlist")
     playlist_track = relationship("DBPlaylist_Track", back_populates="playlist_playlist_track")
