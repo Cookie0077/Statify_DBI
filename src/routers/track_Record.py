@@ -70,12 +70,10 @@ class TrackRecordAPI(BaseAPI):
         return result
 
     @router.post("/sync/{user_id}", response_model=list[TrackRecordResponse])
-    def sync_tracks(self, user_id: int):
+    def sync_tracks_and_artists(self, user_id: int):
         results = self.sp.current_user_recently_played(limit=50)
         timestamp = self.get_timestamp(user_id)
         saved = []
-        AIDs = set()
-
 
         for item in results["items"]:
             cleanplayed_at = item["played_at"][:19] # Cut off everything after seconds
@@ -103,13 +101,13 @@ class TrackRecordAPI(BaseAPI):
                 UID=user_id,
                 TID=db_track.Id
             )
-            self.db.add(new_record)
+            self.db.add(new_record) # Saves the new_record in the python memory (nothing to db yet)
             saved.append(new_record)
 
         self.db.commit() # The objects get "stale" here so python doesn't know the id of the object yet
         for record in saved:
             self.db.refresh(record) # Now it asks for everything again - so now it knows the id
-
+        self.sync_artists()
         return saved
 
     def get_timestamp(self, user_id: int):
@@ -119,16 +117,25 @@ class TrackRecordAPI(BaseAPI):
             .first())
         return record.Timestamp if record else None
 
-    def make_artist(self, artist: dict, imageurl: str = None):
+    def make_artist(self, artist: dict):
         db_artist = models.DBArtist(
             Spotify_id=artist["id"],
-            Name=artist["name"],
-
-
+            Name=artist["name"]
         )
         self.db.add(db_artist)
         self.db.flush()
         return db_artist
+
+    def sync_artists(self):
+        artists = self.db.query(models.DBArtist).filter(models.DBArtist.Image == None).all()
+        artist_ids = [artist.Spotify_id for artist in artists]
+
+        result = self.sp.artists(artist_ids)
+
+        for db_artist, sp_artist in zip(artists, result["artists"]):
+            db_artist.Image = sp_artist["images"][0]["url"] if sp_artist["images"] else None
+        # Like references - can just commit like this
+        self.db.commit()
 
     def make_track(self, track: dict, aid: int):
         db_track = models.DBTrack(
@@ -138,6 +145,7 @@ class TrackRecordAPI(BaseAPI):
             AID=aid
         )
         self.db.add(db_track)
-        self.db.flush()  # Similar to a commit in git
+        self.db.flush()  # Similar to a commit in GIT - already on db but can be rolled back
+        # Also not available for other sessions yet
         return db_track
 
