@@ -91,10 +91,10 @@ class TrackRecordAPI(BaseAPI):
             db_track = self.db.query(models.DBTrack).filter(models.DBTrack.Spotify_id == track["id"]).first()
 
             if not db_artist:
-                db_artist =helper.make_artist(self.db, artist)
+                db_artist = self.make_artist(artist)
 
             if not db_track:
-                db_track = helper.make_track(self.db, track,db_artist.Id)
+                db_track = self.make_track(track,db_artist.Id)
 
             new_record = models.DBTrack_Record(
                 Timestamp=played_at,
@@ -118,15 +118,28 @@ class TrackRecordAPI(BaseAPI):
             .first())
         return record.Timestamp if record else None
 
+    def make_artist(self, artist: dict):
+        newartist = self.sp.artist(artist["id"])
 
-    def sync_artists(self):
-        artists = self.db.query(models.DBArtist).filter(models.DBArtist.Image == None).all()
-        artist_ids = [artist.Spotify_id for artist in artists]
+        image = newartist["images"][0]["url"] if newartist["images"] else None
 
-        result = self.sp.artists(artist_ids)
+        db_artist = models.DBArtist(
+            Spotify_id=artist["id"],
+            Name=artist["name"],
+            Image=image
+        )
+        self.db.add(db_artist)
+        self.db.flush()
+        return db_artist
 
-        for db_artist, sp_artist in zip(artists, result["artists"]):
-            db_artist.Image = sp_artist["images"][0]["url"] if sp_artist["images"] else None
-        # Like references - can just commit like this
-        self.db.commit()
-
+    def make_track(self, track: dict, aid: int):
+        db_track = models.DBTrack(
+            Spotify_id=track["id"],
+            Name=track["name"],
+            Image=track["album"]["images"][0]["url"] if track["album"]["images"] else None,
+            AID=aid
+        )
+        self.db.add(db_track)
+        self.db.flush()  # Similar to a commit in GIT - already on db but can be rolled back
+        # Also not available for other sessions yet
+        return db_track
