@@ -12,6 +12,7 @@ import models
 from auth import verify_api_key
 from database import get_db
 from routers.base import BaseAPI
+import helper
 
 router = APIRouter(prefix="/track_record", tags=["Track-Record"])
 
@@ -90,10 +91,10 @@ class TrackRecordAPI(BaseAPI):
             db_track = self.db.query(models.DBTrack).filter(models.DBTrack.Spotify_id == track["id"]).first()
 
             if not db_artist:
-                db_artist = self.make_artist(artist)
+                db_artist =helper.make_artist(self.db, artist)
 
             if not db_track:
-                db_track = self.make_track(track, db_artist.Id)
+                db_track = helper.make_track(self.db, track,db_artist.Id)
 
             new_record = models.DBTrack_Record(
                 Timestamp=played_at,
@@ -107,7 +108,7 @@ class TrackRecordAPI(BaseAPI):
         self.db.commit() # The objects get "stale" here so python doesn't know the id of the object yet
         for record in saved:
             self.db.refresh(record) # Now it asks for everything again - so now it knows the id
-        self.sync_artists()
+        #self.sync_artists()
         return saved
 
     def get_timestamp(self, user_id: int):
@@ -117,14 +118,6 @@ class TrackRecordAPI(BaseAPI):
             .first())
         return record.Timestamp if record else None
 
-    def make_artist(self, artist: dict):
-        db_artist = models.DBArtist(
-            Spotify_id=artist["id"],
-            Name=artist["name"]
-        )
-        self.db.add(db_artist)
-        self.db.flush()
-        return db_artist
 
     def sync_artists(self):
         artists = self.db.query(models.DBArtist).filter(models.DBArtist.Image == None).all()
@@ -136,16 +129,4 @@ class TrackRecordAPI(BaseAPI):
             db_artist.Image = sp_artist["images"][0]["url"] if sp_artist["images"] else None
         # Like references - can just commit like this
         self.db.commit()
-
-    def make_track(self, track: dict, aid: int):
-        db_track = models.DBTrack(
-            Spotify_id=track["id"],
-            Name=track["name"],
-            Image=track["album"]["images"][0]["url"] if track["album"]["images"] else None,
-            AID=aid
-        )
-        self.db.add(db_track)
-        self.db.flush()  # Similar to a commit in GIT - already on db but can be rolled back
-        # Also not available for other sessions yet
-        return db_track
 

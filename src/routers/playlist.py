@@ -13,7 +13,8 @@ from auth import verify_api_key
 from database import get_db
 from models import DBPlaylist
 from routers.base import BaseAPI
-from track import TrackResponse
+from routers.track import TrackResponse
+import helper
 
 
 
@@ -60,12 +61,13 @@ class PlaylistAPI(BaseAPI):
         for track in Tracks["items"]:
            existing_track = self.db.query(models.DBTrack).filter(models.DBTrack.Spotify_id == track["id"]).first()
            if not existing_track:
-               # TODO: Hier die make Track methode von Trakc records machen
+              artist =  helper.make_artist(track["artists"][0])
+              helper.make_track(track["track"],artist.Id)
 
-            db_track_playlist =models.DBPlaylist_Track(TID=existing_track.id,PID=DBPlaylist.Id)
-            self.db.add(db_track_playlist)
-            self.db.commit()
-            return db_track_playlist
+           db_track_playlist =models.DBPlaylist_Track(TID=existing_track.id,PID=DBPlaylist.Id)
+           self.db.add(db_track_playlist)
+           self.db.commit()
+           return db_track_playlist
 
     @router.get("/{user_id}",response_model=list[PlalistResponse])
     def GetPlaylist(self,user_id: int):
