@@ -61,8 +61,8 @@ class PlaylistAPI(BaseAPI):
         for track in Tracks["items"]:
            existing_track = self.db.query(models.DBTrack).filter(models.DBTrack.Spotify_id == track["id"]).first()
            if not existing_track:
-              artist =  helper.make_artist(track["artists"][0])
-              helper.make_track(track["track"],artist.Id)
+              artist =  helper.make_artist(self.db,self.sp, track["artists"][0])
+              helper.make_track(self.db,track["track"],artist.Id)
 
            db_track_playlist =models.DBPlaylist_Track(TID=existing_track.id,PID=DBPlaylist.Id)
            self.db.add(db_track_playlist)

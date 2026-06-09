@@ -1,9 +1,15 @@
 import models
 
-def make_artist(db, artist: dict):
+
+def make_artist(db,sp,artist: dict):
+    newartist = sp.artist(artist["id"])
+
+    image = newartist["images"][0]["url"] if newartist["images"] else None
+
     db_artist = models.DBArtist(
         Spotify_id=artist["id"],
-        Name=artist["name"]
+        Name = artist["name"],
+        Image = image
     )
     db.add(db_artist)
     db.flush()
