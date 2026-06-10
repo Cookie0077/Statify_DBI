@@ -17,7 +17,7 @@ router = APIRouter(prefix="/artist", tags=["Artist"])
 class ArtistCreate(BaseModel):
     Name: str
     Spotify_id: str
-    Image: str| None
+    Image: str
 
     model_config = {"from_attributes": True}
 
