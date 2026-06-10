@@ -17,19 +17,22 @@ router = APIRouter(prefix="/artist", tags=["Artist"])
 class ArtistCreate(BaseModel):
     Name: str
     Spotify_id: str
-    Image: str| None
+    Image: str | None
 
     model_config = {"from_attributes": True}
 
 class ArtistResponse(ArtistCreate):
     Id: int
 
+class ArtistDetailResponse(ArtistResponse):
+    Playtime: int
+
 @cbv(router)
 class Artist(BaseAPI):
     db: Session = Depends(get_db)
     api_key:str = Depends(verify_api_key)
 
-    @router.get("/{user_id}", response_model=list[ArtistResponse])
+    @router.get("/{user_id}", response_model=list[ArtistDetailResponse])
     def get_artists(self, user_id: int,limit: Optional[int] = None):
         artists = (
         self.db.query(models.DBArtist)
@@ -41,4 +44,38 @@ class Artist(BaseAPI):
         .distinct()
         .limit(limit)
         .all())
-        return artists
+
+        playtimes = [self.get_playtime(user_id, artist.Id) for artist in artists]
+        result = []
+
+
+        for i in range(len(artists)):
+            artist = artists[i]
+            playtime = playtimes[i]
+
+            result.append(ArtistDetailResponse(
+                Id=artist.Id,
+                Name=artist.Name,
+                Spotify_id=artist.Spotify_id,
+                Image=artist.Image,
+                Playtime=playtime or 0
+            ))
+
+        return result
+
+
+    def get_playtime(self, user_id: int, artist_id: int) -> int:
+        playtime = 0
+
+        tracks = (
+        self.db.query(models.DBTrack_Record)
+        .join(models.DBTrack, models.DBTrack_Record.TID == models.DBTrack.Id)
+        .filter(models.DBTrack_Record.UID == user_id)
+        .filter(models.DBTrack.AID == artist_id)
+        .all())
+        if tracks:
+            for curPlaytime in tracks:
+                playtime += curPlaytime.Duration
+
+        return playtime
+
