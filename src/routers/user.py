@@ -49,7 +49,13 @@ class UserAPI(BaseAPI):
         self.db.add(db_user)
         self.db.flush()
         # TODO: Anhand von password und Username schauen ob es ein Admin oder User ist
-        db_role = models.DBRole(Role="User",UID=db_user.Id,CanGet=True,CanPost=True,CanDelete=False)
+        db_role = models.DBRole(
+            Role="User",
+            UID=db_user.Id,
+            CanGet=True,
+            CanPost=True,
+            CanDelete=False)
+        
         self.db.add(db_role)
         self.db.commit()
         self.db.refresh(db_user)

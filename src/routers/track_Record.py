@@ -75,7 +75,7 @@ class TrackRecordAPI(BaseAPI):
     @router.post("/sync/{user_id}", response_model=list[TrackRecordResponse])
     def sync_tracks_and_artists(self, user_id: int):
         results = self.sp.current_user_recently_played(limit=50)
-        timestamp = helper.get_timestamp(user_id)
+        timestamp = self.get_timestamp(user_id)
         saved = []
 
         for item in results["items"]:
@@ -92,6 +92,7 @@ class TrackRecordAPI(BaseAPI):
             db_artist = self.db.query(models.DBArtist).filter(models.DBArtist.Spotify_id == artist["id"]).first()
             db_track = self.db.query(models.DBTrack).filter(models.DBTrack.Spotify_id == track["id"]).first()
 
+            # TODO: Instead of sp.artist try sp.artists again - mby its fixable
             if not db_artist:
                 db_artist =helper.make_artist(self.db,self.sp, artist)
 
@@ -111,6 +112,7 @@ class TrackRecordAPI(BaseAPI):
         for record in saved:
             self.db.refresh(record) # Now it asks for everything again - so now it knows the id
         return saved
+
 
 
 
