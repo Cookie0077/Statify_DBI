@@ -18,6 +18,7 @@ class ArtistCreate(BaseModel):
     Name: str
     Spotify_id: str
     Image: str | None
+    URL: str | None
 
     model_config = {"from_attributes": True}
 
@@ -58,6 +59,7 @@ class Artist(BaseAPI):
                 Name=artist.Name,
                 Spotify_id=artist.Spotify_id,
                 Image=artist.Image,
+                URL=artist.URL,
                 Playtime=playtime or 0
             ))
 

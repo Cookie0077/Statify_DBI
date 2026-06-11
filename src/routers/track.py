@@ -14,6 +14,7 @@ class TrackCreate(BaseModel):
     Spotify_id: str
     Name: str = Field(..., min_length=1, max_length=200)
     Image: str
+    URL: str
     AID: int
 
 

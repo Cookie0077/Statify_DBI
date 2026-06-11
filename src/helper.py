@@ -9,7 +9,8 @@ def make_artist(db,sp,artist: dict):
     db_artist = models.DBArtist(
         Spotify_id=artist["id"],
         Name = artist["name"],
-        Image = image
+        Image = image,
+        URL =artist["external_urls"]["spotify"]
     )
     db.add(db_artist)
     db.flush()
@@ -20,6 +21,7 @@ def make_track(db, track: dict, aid: int):
         Spotify_id=track["id"],
         Name=track["name"],
         Image=track["album"]["images"][0]["url"] if track["album"]["images"] else None,
+        URL=track["external_urls"]["spotify"],
         AID=aid
     )
     db.add(db_track)

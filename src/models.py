@@ -43,6 +43,7 @@ class DBTrack(Base):
     Spotify_id = Column(String, index=True)
     Name = Column(String, index=True)
     Image = Column(String, index=True)
+    URL = Column(String, index=True)
     AID = Column(Integer, ForeignKey("Artists.Id"))
 
     artist_track = relationship("DBArtist", back_populates="track_artist")
@@ -56,7 +57,7 @@ class DBArtist(Base):
     Spotify_id = Column(String, index=True)
     Name = Column(String, index=True)
     Image = Column(String, index=True, nullable=True)
-
+    URL = Column(String, index=True)
     track_artist = relationship("DBTrack", back_populates="artist_track")
     artist_genres = relationship("DBArtist_Genre", back_populates="artist_genre")
 
@@ -94,6 +95,7 @@ class DBPlaylist(Base):
     Spotify_id = Column(String, index=True)
     Name = Column(String, index=True)
     Image = Column(String, index=True)
+    URL = Column(String, index=True)
     UID = Column(Integer, ForeignKey("Users.Id"), index=True)
 
     playlist_user= relationship("DBUser", back_populates="user_playlist")

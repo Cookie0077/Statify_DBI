@@ -32,6 +32,7 @@ class TrackRecordDetailResponse(TrackRecordResponse):
     Track_Name: str
     Track_Image: str
     Artist_Name: str
+    URL: str
     Playcount: int
 
 
@@ -66,6 +67,7 @@ class TrackRecordAPI(BaseAPI):
                 Track_Name=track.track_track_record.Name,
                 Track_Image=track.track_track_record.Image,
                 Artist_Name=track.track_track_record.artist_track.Name,
+                URL=track.track_track_record.URL,
                 Playcount=playcount,
             ))
         return result

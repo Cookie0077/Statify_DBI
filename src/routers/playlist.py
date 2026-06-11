@@ -26,6 +26,7 @@ class PlalistCreate(BaseModel):
     Name: str
     Image: str
     Spotify_id: str
+    URL: str
     UID:int
 
 class PlalistResponse(PlalistCreate):
@@ -52,6 +53,7 @@ class PlaylistAPI(BaseAPI):
                     Spotify_id=playlist["id"],
                     UID=user_id,
                     Image=playlist["images"][0]["url"],
+                    URL=playlist["external_urls"]["spotify"],
                 )
 
 
@@ -63,7 +65,8 @@ class PlaylistAPI(BaseAPI):
 
     @router.post("/sync/{playlist_id}/tracks",response_model=list[TrackResponse])
     def AddTracksfromPlaylist(self,playlist_id: int):
-        DBPlaylist = self.db.query(models.DBPlaylist).filter(models.DBPlaylist.Spotify_id == playlist_id).first()
+        result =[]
+        DBPlaylist = self.db.query(models.DBPlaylist).filter(models.DBPlaylist.Id == playlist_id).first()
         count = self.db.query(models.DBPlaylist_Track).filter(DBPlaylist_Track.PID == playlist_id).count()
         Items = self.sp.playlist_items(DBPlaylist.Spotify_id, offset=count, limit=100)
         for item in Items["items"]:
@@ -78,8 +81,11 @@ class PlaylistAPI(BaseAPI):
 
             db_track_playlist =models.DBPlaylist_Track(TID=existing_track.Id,PID=DBPlaylist.Id)
             self.db.add(db_track_playlist)
-
+            DBtrack = TrackResponse(Name=existing_track.Name,Id=existing_track.Id,Spotify_id=existing_track.Spotify_id,Image=existing_track.Image,URL=existing_track.URL,AID=existing_track.AID)
+            result.append(DBtrack)
         self.db.commit()
+
+        return result
 
 
     @router.get("/{user_id}/playlist",response_model=list[PlalistResponse])
