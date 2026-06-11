@@ -1,6 +1,5 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Boolean
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
-from starlette.datastructures import URL
 
 from database import Base
 
@@ -63,7 +62,6 @@ class DBArtist(Base):
     track_artist = relationship("DBTrack", back_populates="artist_track")
 
 
-
 class DBPlaylist_Track(Base):
     __tablename__ = "Playlist_Tracks"
     Id = Column(Integer, primary_key=True)
@@ -73,8 +71,9 @@ class DBPlaylist_Track(Base):
     playlist_track = relationship("DBTrack", back_populates="track_playlist")
     playlist_playlist_track = relationship("DBPlaylist", back_populates="playlist_track")
 
+
 class DBPlaylist(Base):
-    __tablename__ = "Playlists" 
+    __tablename__ = "Playlists"
     Id = Column(Integer, primary_key=True)
     Spotify_id = Column(String, index=True)
     Name = Column(String, index=True)
@@ -82,5 +81,5 @@ class DBPlaylist(Base):
     URL = Column(String, index=True)
     UID = Column(Integer, ForeignKey("Users.Id"), index=True)
 
-    playlist_user= relationship("DBUser", back_populates="user_playlist")
+    playlist_user = relationship("DBUser", back_populates="user_playlist")
     playlist_track = relationship("DBPlaylist_Track", back_populates="playlist_playlist_track")

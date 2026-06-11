@@ -1,12 +1,13 @@
 import uvicorn
-from fastapi import FastAPI,Request
+from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette import status
-from routers import artitst,playlist,track,track_Record,user
-from database import engine
+
 import models
+from database import engine
 from python_client import sp
+from routers import artitst, playlist, track, track_Record, user
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -17,6 +18,7 @@ app.include_router(track.router)
 
 app.include_router(artitst.router)
 app.include_router(playlist.router)
+
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
@@ -29,6 +31,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         "status": "Validation Error",
         "errors": errors
     })
+
 
 @app.get("/")
 def root():
