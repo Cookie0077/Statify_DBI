@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from auth import verify_api_key
 from database import get_db
 from passlib.context import CryptContext
-
+from routers.base import BaseAPI
 from models import DBUser
 
 router = APIRouter(prefix="/user", tags=["User"])
@@ -34,17 +34,18 @@ class UserResponse(BaseModel):
 
 
 @cbv(router)
-class UserAPI():
+class UserAPI(BaseAPI):
     db: Session = Depends(get_db)
     api_key: str = Depends(verify_api_key)
 
     @router.post("/register", response_model=UserResponse)
     def register(self, user: UserLogin):
         existing_user = self.db.query(DBUser).filter(DBUser.Name == user.Name).first()
+        Spotify_user = self.sp.current_user()
         if existing_user:
             raise HTTPException(status_code=400, detail="Username bereits vergeben")
         hashed = hash_password(user.Password)
-        db_user = DBUser(Name=user.Name, Password=hashed)
+        db_user = DBUser(Name=user.Name, Password=hashed,Image=Spotify_user["Images"][0])
         self.db.add(db_user)
         self.db.flush()
         # TODO: Anhand von password und Username schauen ob es ein Admin oder User ist

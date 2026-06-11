@@ -64,7 +64,7 @@ class PlaylistAPI(BaseAPI):
 
 
     @router.post("/sync/{playlist_id}/tracks",response_model=list[TrackResponse])
-    def AddTracksfromPlaylist(self,playlist_id: int):
+    def ADD_GET_TracksfromPlaylist(self,playlist_id: int):
         result =[]
         DBPlaylist = self.db.query(models.DBPlaylist).filter(models.DBPlaylist.Id == playlist_id).first()
         count = self.db.query(models.DBPlaylist_Track).filter(DBPlaylist_Track.PID == playlist_id).count()
@@ -88,7 +88,7 @@ class PlaylistAPI(BaseAPI):
         return result
 
 
-    @router.get("/{user_id}/playlist",response_model=list[PlalistResponse])
+    @router.get("/{user_id}",response_model=list[PlalistResponse])
     def GetPlaylists(self,user_id: int):
         playlists = self.db.query(models.DBPlaylist).filter(models.DBPlaylist.UID == user_id).all()
         return playlists
