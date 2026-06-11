@@ -34,11 +34,4 @@ class TrackAPI(BaseAPI):
     def get_track(self, id: int):
         return self.get_or_404(self.db, models.DBTrack, id)
 
-    @router.post("/", response_model=TrackResponse)
-    def add_tracks(self, listOfTracks: list[TrackCreate]):
-        # TODO: Implement - needed after track_record call
-        pass
-
-
-
         
