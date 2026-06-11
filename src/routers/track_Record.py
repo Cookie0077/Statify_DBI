@@ -113,7 +113,8 @@ class TrackRecordAPI(BaseAPI):
         record = (self.db.query(models.DBTrack_Record)
             .filter(models.DBTrack_Record.UID == user_id)
             .order_by(models.DBTrack_Record.Timestamp.desc())
-            .first())
+                  .first())
         return record.Timestamp if record else None
 
+    # TODO: Make GET per Day stats route
 
