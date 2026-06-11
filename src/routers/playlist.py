@@ -92,13 +92,3 @@ class PlaylistAPI(BaseAPI):
     def GetPlaylists(self,user_id: int):
         playlists = self.db.query(models.DBPlaylist).filter(models.DBPlaylist.UID == user_id).all()
         return playlists
-
-    @router.get("/{playlist_id}/tracks",response_model=list[TrackResponse])
-    def GetTracksfromPlaylist(self, playlist_id: int):
-        Tracks = (
-            self.db.query(models.DBTrack)
-            .join(models.DBPlaylist_Track, models.DBPlaylist_Track.TID == models.DBTrack.Id)
-            .filter(models.DBPlaylist_Track.PID == playlist_id)
-            .all()
-        )
-        return Tracks

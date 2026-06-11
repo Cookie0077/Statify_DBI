@@ -59,7 +59,6 @@ class DBArtist(Base):
     Image = Column(String, index=True, nullable=True)
     URL = Column(String, index=True)
     track_artist = relationship("DBTrack", back_populates="artist_track")
-    artist_genres = relationship("DBArtist_Genre", back_populates="artist_genre")
 
 
 
