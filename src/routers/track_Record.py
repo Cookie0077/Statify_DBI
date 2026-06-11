@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional
-from  collections import Counter
+from collections import Counter
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
@@ -42,7 +42,7 @@ class TrackRecordAPI(BaseAPI):
     api_key: str = Depends(verify_api_key)
 
     @router.get("/{user_id}", response_model=list[TrackRecordDetailResponse])
-    def get_all(self, user_id: int,limit: Optional[int] = None):
+    def get_all(self, user_id: int, limit: Optional[int] = None):
 
         tracks = (
             self.db.query(
@@ -79,10 +79,11 @@ class TrackRecordAPI(BaseAPI):
         saved = []
 
         for item in results["items"]:
-            cleanplayed_at = item["played_at"][:19] # Cut off everything after seconds
-            played_at = datetime.strptime(cleanplayed_at, "%Y-%m-%dT%H:%M:%S") # Turn the string into a correct Datetime
+            cleanplayed_at = item["played_at"][:19]  # Cut off everything after seconds
+            played_at = datetime.strptime(cleanplayed_at,
+                                          "%Y-%m-%dT%H:%M:%S")  # Turn the string into a correct Datetime
 
-            if timestamp and played_at <= timestamp:# Check if already in db
+            if timestamp and played_at <= timestamp:  # Check if already in db
                 continue
 
             track = item["track"]
@@ -100,21 +101,11 @@ class TrackRecordAPI(BaseAPI):
                 UID=user_id,
                 TID=db_track.Id
             )
-            self.db.add(new_record) # Saves the new_record in the python memory (nothing to db yet)
+            self.db.add(new_record)  # Saves the new_record in the python memory (nothing to db yet)
             saved.append(new_record)
 
-        self.db.commit() # The objects get "stale" here so python doesn't know the id of the object yet
+        self.db.commit()  # The objects get "stale" here so python doesn't know the id of the object yet
         for record in saved:
-            self.db.refresh(record) # Now it asks for everything again - so now it knows the id
+            self.db.refresh(record)  # Now it asks for everything again - so now it knows the id
         return saved
-
-
-    def get_timestamp(self, user_id: int):
-        record = (self.db.query(models.DBTrack_Record)
-            .filter(models.DBTrack_Record.UID == user_id)
-            .order_by(models.DBTrack_Record.Timestamp.desc())
-                  .first())
-        return record.Timestamp if record else None
-
     # TODO: Make GET per Day stats route
-
