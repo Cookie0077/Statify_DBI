@@ -4,6 +4,10 @@ import models
 
 
 def make_artist(db,sp,artist: dict):
+    db_artist = db.query(models.DBArtist).filter(models.DBArtist.Spotify_id == artist["id"]).first()
+    if db_artist:
+        return db_artist
+
     newartist = sp.artist(artist["id"])
 
     image = newartist["images"][0]["url"] if newartist["images"] else None
@@ -19,6 +23,10 @@ def make_artist(db,sp,artist: dict):
     return db_artist
 
 def make_track(db, track: dict, aid: int):
+    db_track = db.query(models.DBTrack).filter(models.DBTrack.Spotify_id == track["id"]).first()
+    if db_track:
+        return db_track
+
     image =track["album"]["images"][0]["url"] if track["album"]["images"] else None
     db_track = models.DBTrack(
         Spotify_id=track["id"],

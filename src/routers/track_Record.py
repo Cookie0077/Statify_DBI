@@ -89,15 +89,10 @@ class TrackRecordAPI(BaseAPI):
             artist = track["artists"][0]
 
 
-            db_artist = self.db.query(models.DBArtist).filter(models.DBArtist.Spotify_id == artist["id"]).first()
-            db_track = self.db.query(models.DBTrack).filter(models.DBTrack.Spotify_id == track["id"]).first()
+           # TODO: Instead of sp.artist try sp.artists again - mby its fixable
 
-            # TODO: Instead of sp.artist try sp.artists again - mby its fixable
-            if not db_artist:
-                db_artist =helper.make_artist(self.db,self.sp, artist)
-
-            if not db_track:
-                db_track = helper.make_track(self.db, track,db_artist.Id)
+            db_artist =helper.make_artist(self.db,self.sp, artist)
+            db_track = helper.make_track(self.db, track,db_artist.Id)
 
             new_record = models.DBTrack_Record(
                 Timestamp=played_at,
