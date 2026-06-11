@@ -1,4 +1,6 @@
 from pydantic import BaseModel, Field, field_validator, ValidationError
+from sqlalchemy import false
+
 import models  as models
 from fastapi import APIRouter, HTTPException
 from fastapi.params import Depends
@@ -44,6 +46,10 @@ class UserAPI():
         hashed = hash_password(user.Password)
         db_user = DBUser(Name=user.Name, Password=hashed)
         self.db.add(db_user)
+        self.db.flush()
+        # TODO: Anhand von password und Username schauen ob es ein Admin oder User ist
+        db_role = models.DBRole(Role="User",UID=db_user.Id,CanGet=True,CanPost=True,CanDelete=False)
+        self.db.add(db_role)
         self.db.commit()
         self.db.refresh(db_user)
         return db_user

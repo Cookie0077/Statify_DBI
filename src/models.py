@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -8,21 +8,21 @@ class DBUser(Base):
     Id = Column(Integer, primary_key=True)
     Name = Column(String, index=True)
     Password = Column(String, index=True)
-
-
-    settings_user = relationship("DBUser_Settings", back_populates="user_setting")
+    Image = Column(String, index=True)
+    Role_user = relationship("DBRole", back_populates="user_Roles")
     track_User = relationship("DBTrack_Record", back_populates="user_track_record")
     user_playlist = relationship("DBPlaylist", back_populates="playlist_user")
 
 
-class DBUser_Settings(Base):
-    __tablename__ = "User_Settings"
+class DBRole(Base):
+    __tablename__ = "Role"
     Id = Column(Integer, primary_key=True)
-    Spotify_token = Column(String, index=True)
     Role = Column(String, index=True)
     UID = Column(Integer, ForeignKey("Users.Id"), index=True)
-
-    user_setting = relationship("DBUser", back_populates="settings_user")
+    CanGet = Column(Boolean, index=True)
+    CanPost = Column(Boolean, index=True)
+    CanDelete = Column(Boolean, index=True)
+    user_Roles = relationship("DBUser", back_populates="Role_user")
 
 
 class DBTrack_Record(Base):
@@ -61,23 +61,6 @@ class DBArtist(Base):
     track_artist = relationship("DBTrack", back_populates="artist_track")
     artist_genres = relationship("DBArtist_Genre", back_populates="artist_genre")
 
-
-class DBArtist_Genre(Base):
-    __tablename__ = "Artist_Genre"
-    Id = Column(Integer, primary_key=True)
-    AID = Column(Integer, ForeignKey("Artists.Id"), index=True)
-    GID = Column(Integer, ForeignKey("Genre.Id"), index=True)
-
-    artist_genre = relationship("DBArtist", back_populates="artist_genres")
-    genre_artist = relationship("DBGenre", back_populates="genre_artists")
-
-
-class DBGenre(Base):
-    __tablename__ = "Genre"
-    Id = Column(Integer, primary_key=True)
-    Name = Column(String, index=True)
-
-    genre_artists = relationship("DBArtist_Genre", back_populates="genre_artist")
 
 
 class DBPlaylist_Track(Base):

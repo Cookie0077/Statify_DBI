@@ -1,3 +1,5 @@
+from email.mime import image
+
 import models
 
 
@@ -17,10 +19,11 @@ def make_artist(db,sp,artist: dict):
     return db_artist
 
 def make_track(db, track: dict, aid: int):
+    image =track["album"]["images"][0]["url"] if track["album"]["images"] else None
     db_track = models.DBTrack(
         Spotify_id=track["id"],
         Name=track["name"],
-        Image=track["album"]["images"][0]["url"] if track["album"]["images"] else None,
+        Image=  image,
         URL=track["external_urls"]["spotify"],
         AID=aid
     )
