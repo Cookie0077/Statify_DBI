@@ -10,6 +10,7 @@ import models
 from auth import verify_api_key
 from database import get_db
 from routers.base import BaseAPI
+import helper
 
 router = APIRouter(prefix="/artist", tags=["Artist"])
 
@@ -46,7 +47,7 @@ class Artist(BaseAPI):
         .limit(limit)
         .all())
 
-        playtimes = [self.get_playtime(user_id, artist.Id) for artist in artists]
+        playtimes = [helper.get_playtime(user_id, artist.Id) for artist in artists]
         result = []
 
 
@@ -65,19 +66,13 @@ class Artist(BaseAPI):
 
         return result
 
+    @router.delete("/{artist_id}", response_model=ArtistDetailResponse)
+    def delete_artist(self, artist_id: int):
+        deleted_artist = self.db.query(models.DBArtist).get(artist_id)
+        self.db.delete(deleted_artist)
+        self.db.commit()
+        return ArtistDetailResponse(Id=deleted_artist.Id,Name=deleted_artist.Name,Spotify_id=deleted_artist.Spotify_id,Image=deleted_artist.Image,URL=deleted_artist.URL)
 
-    def get_playtime(self, user_id: int, artist_id: int) -> int:
-        playtime = 0
 
-        tracks = (
-        self.db.query(models.DBTrack_Record)
-        .join(models.DBTrack, models.DBTrack_Record.TID == models.DBTrack.Id)
-        .filter(models.DBTrack_Record.UID == user_id)
-        .filter(models.DBTrack.AID == artist_id)
-        .all())
-        if tracks:
-            for curPlaytime in tracks:
-                playtime += curPlaytime.Duration
 
-        return playtime
 

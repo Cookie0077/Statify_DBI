@@ -13,4 +13,3 @@ class BaseAPI:
             raise HTTPException(status_code=404, detail=f"Eintrag in {model.__tablename__} mit ID {item_id} nicht gefunden")
 
         return item
-

@@ -39,6 +39,13 @@ class TrackAPI(BaseAPI):
         # TODO: Implement - needed after track_record call
         pass
 
+    @router.delete("/{track_id}", response_model=TrackResponse)
+    def delete_track(self, track_id: int):
+        deleted_track = self.db.query(models.DBTrack).filter(models.DBTrack.Id == track_id).first()
+        self.db.delete(deleted_track)
+        self.db.commit()
+        return TrackResponse(Id=deleted_track.Id,Name=deleted_track.Name,Spotify_id=deleted_track.Spotify_id,Image=deleted_track.Image,URL=deleted_track.URL,AID=deleted_track.AID)
+
 
 
         

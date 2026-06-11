@@ -1,10 +1,8 @@
-from os import name
-from typing import Optional
 
-import sqlalchemy
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, field_validator, Field
 from fastapi_restful.cbv import cbv
+from sqlalchemy import URL
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.functions import count
 
@@ -64,7 +62,7 @@ class PlaylistAPI(BaseAPI):
 
 
     @router.post("/sync/{playlist_id}/tracks",response_model=list[TrackResponse])
-    def ADD_GET_TracksfromPlaylist(self,playlist_id: int):
+    def ADD_GET_Tracks_from_Playlist(self,playlist_id: int):
         result =[]
         DBPlaylist = self.db.query(models.DBPlaylist).filter(models.DBPlaylist.Id == playlist_id).first()
         count = self.db.query(models.DBPlaylist_Track).filter(DBPlaylist_Track.PID == playlist_id).count()
@@ -89,6 +87,13 @@ class PlaylistAPI(BaseAPI):
 
 
     @router.get("/{user_id}",response_model=list[PlalistResponse])
-    def GetPlaylists(self,user_id: int):
+    def Get_Playlists(self,user_id: int):
         playlists = self.db.query(models.DBPlaylist).filter(models.DBPlaylist.UID == user_id).all()
         return playlists
+
+    @router.delete("/{playlist_id}",response_model=PlalistResponse)
+    def Delete_Playlists(self,playlist_id: int):
+        deletd_playlist = self.db.query(models.DBPlaylist).filter(models.DBPlaylist.Id == playlist_id).first()
+        self.db.delete(deletd_playlist)
+        self.db.commit()
+        return PlalistResponse(Id=deletd_playlist.Id,Name=deletd_playlist.Name,Spotify_id=deletd_playlist.Spotify_id,Image=deletd_playlist.Image,URL=deletd_playlist.URL,UID=deletd_playlist.UID)

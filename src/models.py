@@ -1,5 +1,7 @@
 from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
+from starlette.datastructures import URL
+
 from database import Base
 
 

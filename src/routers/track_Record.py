@@ -75,7 +75,7 @@ class TrackRecordAPI(BaseAPI):
     @router.post("/sync/{user_id}", response_model=list[TrackRecordResponse])
     def sync_tracks_and_artists(self, user_id: int):
         results = self.sp.current_user_recently_played(limit=50)
-        timestamp = self.get_timestamp(user_id)
+        timestamp = helper.get_timestamp(user_id)
         saved = []
 
         for item in results["items"]:
@@ -112,11 +112,5 @@ class TrackRecordAPI(BaseAPI):
             self.db.refresh(record) # Now it asks for everything again - so now it knows the id
         return saved
 
-    def get_timestamp(self, user_id: int):
-        record = (self.db.query(models.DBTrack_Record)
-            .filter(models.DBTrack_Record.UID == user_id)
-            .order_by(models.DBTrack_Record.Timestamp.desc())
-            .first())
-        return record.Timestamp if record else None
 
 

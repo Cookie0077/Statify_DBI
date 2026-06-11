@@ -61,3 +61,10 @@ class UserAPI(BaseAPI):
         if not db_user or not verify_password(user.Password, db_user.Password):
             raise HTTPException(status_code=401, detail="Ungültige Zugangsdaten")
         return db_user
+
+    @router.delete("/logout/{user_id}", response_model=UserResponse)
+    def logout(self,user_id: int):
+        db_user = self.db.query(DBUser).filter(DBUser.Id == user_id).first()
+        self.db.delete(db_user)
+        self.db.commit()
+        return UserResponse(Id=db_user.Id,Name=db_user.Name)
