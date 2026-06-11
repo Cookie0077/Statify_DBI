@@ -28,7 +28,6 @@ class TrackRecordResponse(TrackRecordCreate):
     Id: int
     model_config = {"from_attributes": True}
 
-
 class TrackRecordDetailResponse(TrackRecordResponse):
     Track_Name: str
     Track_Image: str
@@ -91,9 +90,10 @@ class TrackRecordAPI(BaseAPI):
             artist = track["artists"][0]
 
 
-              # TODO: Instead of sp.artist try sp.artists again - mby its fixable
-            db_artist = helper.make_artist(self.db, self.sp, artist)
-            db_track = helper.make_track(self.db, track, db_artist.Id)
+           # TODO: Instead of sp.artist try sp.artists again - mby its fixable
+
+            db_artist =helper.make_artist(self.db,self.sp, artist)
+            db_track = helper.make_track(self.db, track,db_artist.Id)
 
             new_record = models.DBTrack_Record(
                 Timestamp=played_at,
@@ -108,3 +108,4 @@ class TrackRecordAPI(BaseAPI):
         for record in saved:
             self.db.refresh(record)  # Now it asks for everything again - so now it knows the id
         return saved
+    # TODO: Make GET per Day stats route
