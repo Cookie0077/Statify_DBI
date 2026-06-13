@@ -9,7 +9,7 @@ class DBUser(Base):
     Id = Column(Integer, primary_key=True)
     Name = Column(String, index=True)
     Password = Column(String, index=True)
-    Image = Column(String, index=True)
+    Image = Column(String, index=True, nullable=True)
     Role_user = relationship("DBRole", back_populates="user_Roles")
     track_User = relationship("DBTrack_Record", back_populates="user_track_record")
     user_playlist = relationship("DBPlaylist", back_populates="playlist_user")
