@@ -1,4 +1,7 @@
-from fastapi import APIRouter, Depends
+import time
+from typing import Optional
+
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi_restful.cbv import cbv
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -55,32 +58,51 @@ class PlaylistAPI(BaseAPI):
         self.db.commit()
         return {"message": "Playlist successfully added"}
 
-    @router.post("/sync/{playlist_id}/tracks", response_model=list[TrackResponse])
+    @router.post("/sync/{playlist_id}/tracks")
     def ADD_GET_Tracks_from_Playlist(self, playlist_id: int):
-        result = []
         DBPlaylist = self.db.query(models.DBPlaylist).filter(models.DBPlaylist.Id == playlist_id).first()
+        if not DBPlaylist:
+            raise HTTPException(status_code=404, detail="Playlist not found")
+
         count = self.db.query(models.DBPlaylist_Track).filter(DBPlaylist_Track.PID == playlist_id).count()
-        Items = self.sp.playlist_items(DBPlaylist.Spotify_id, offset=count, limit=100)
-        for item in Items["items"]:
-            if not item or not item.get("item"):
-                continue
+        results = self.sp.playlist_items(DBPlaylist.Spotify_id, offset=count, limit=100)
 
-            track = item["item"]
-            existing_track = self.db.query(models.DBTrack).filter(models.DBTrack.Spotify_id == track["id"]).first()
-            if not existing_track:
-                artist = helper.make_artist(self.db, self.sp, track["artists"][0])
-                existing_track = helper.make_track(self.db, track, artist.Id)
 
-            db_track_playlist = models.DBPlaylist_Track(TID=existing_track.Id, PID=DBPlaylist.Id)
-            self.db.add(db_track_playlist)
-            DBtrack = TrackResponse(Name=existing_track.Name, Id=existing_track.Id,
-                                    Spotify_id=existing_track.Spotify_id, Image=existing_track.Image,
-                                    URL=existing_track.URL, AID=existing_track.AID)
-            result.append(DBtrack)
-        self.db.commit()
+        while results:
+            for item in results["items"]:
+                if not item or not item.get("item"):
+                    continue
 
-        return result
+                track = item["item"]
+                existing_track = self.db.query(models.DBTrack).filter(models.DBTrack.Spotify_id == track["id"]).first()
+                if not existing_track:
+                    artist = helper.make_artist(self.db, self.sp, track["artists"][0])
+                    existing_track = helper.make_track(self.db, track, artist.Id)
 
+                db_track_playlist = models.DBPlaylist_Track(TID=existing_track.Id, PID=playlist_id)
+                self.db.add(db_track_playlist)
+
+            self.db.commit()
+            if results["next"]:
+                time.sleep(0.1)
+                results = self.sp.next(results)
+            else:
+                results = None
+
+
+        return {"message": "Tracks successfully added"}
+
+    @router.get("/{playlist_id}/tracks", response_model=list[TrackResponse])
+    def Get_Tracks_from_Playlist(self, playlist_id: int, offset: Optional[int] = None):
+        tracks = (
+            self.db.query(models.DBTrack)
+            .join(models.DBPlaylist_Track, models.DBPlaylist_Track.TID == models.DBTrack.Id)
+            .filter(models.DBPlaylist_Track.PID == playlist_id)
+            .offset(offset)
+            .limit(50)
+            .all()
+        )
+        return tracks
     @router.get("/{user_id}", response_model=list[PlalistResponse])
     def Get_Playlists(self, user_id: int):
         playlists = self.db.query(models.DBPlaylist).filter(models.DBPlaylist.UID == user_id).all()

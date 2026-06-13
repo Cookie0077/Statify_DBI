@@ -38,11 +38,11 @@ def make_track(db, track: dict, aid: int):
     return db_track
 
 
-def get_playtime(self, user_id: int, artist_id: int) -> int:
+def get_playtime(db, user_id: int, artist_id: int) -> int:
     playtime = 0
 
     tracks = (
-        self.db.query(models.DBTrack_Record)
+        db.query(models.DBTrack_Record)
         .join(models.DBTrack, models.DBTrack_Record.TID == models.DBTrack.Id)
         .filter(models.DBTrack_Record.UID == user_id)
         .filter(models.DBTrack.AID == artist_id)
@@ -54,8 +54,8 @@ def get_playtime(self, user_id: int, artist_id: int) -> int:
     return playtime
 
 
-def get_timestamp(self, user_id: int):
-    record = (self.db.query(models.DBTrack_Record)
+def get_timestamp(db, user_id: int):
+    record = (db.query(models.DBTrack_Record)
               .filter(models.DBTrack_Record.UID == user_id)
               .order_by(models.DBTrack_Record.Timestamp.desc())
               .first())

@@ -32,6 +32,7 @@ class UserLogin(BaseModel):
 class UserResponse(BaseModel):
     Id: int = Field(...)
     Name: str = Field(...)
+    Image: str = Field(...)
 
 
 @cbv(router)
@@ -46,7 +47,7 @@ class UserAPI(BaseAPI):
         if existing_user:
             raise HTTPException(status_code=400, detail="Username bereits vergeben")
         hashed = hash_password(user.Password)
-        db_user = DBUser(Name=user.Name, Password=hashed, Image=Spotify_user["Images"][0])
+        db_user = DBUser(Name=user.Name, Password=hashed, Image=Spotify_user["images"][0]["url"])
         self.db.add(db_user)
         self.db.flush()
         # TODO: Anhand von password und Username schauen ob es ein Admin oder User ist

@@ -75,7 +75,7 @@ class TrackRecordAPI(BaseAPI):
     @router.post("/sync/{user_id}", response_model=list[TrackRecordResponse])
     def sync_tracks_and_artists(self, user_id: int):
         results = self.sp.current_user_recently_played(limit=50)
-        timestamp = self.get_timestamp(user_id)
+        timestamp = helper.get_timestamp(self.db,user_id)
         saved = []
 
         for item in results["items"]:

@@ -50,7 +50,7 @@ class Artist(BaseAPI):
             .limit(limit)
             .all())
 
-        playtimes = [helper.get_playtime(user_id, artist.Id) for artist in artists]
+        playtimes = [helper.get_playtime(self.db,user_id, artist.Id) for artist in artists]
         result = []
 
         for i in range(len(artists)):
