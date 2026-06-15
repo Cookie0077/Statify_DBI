@@ -64,7 +64,7 @@ class TrackRecordAPI(BaseAPI):
                 result.append(TrackRecordDetailResponse(
                     Id=int(track.Id),
                     Timestamp=track.Timestamp,
-                    Duration=int(track.Duration),
+                    Duration=int(track.track_track_record.Duration),
                     UID=int(track.UID),
                     TID=int(track.TID),
                     Track_Name=track.track_track_record.Name,

@@ -43,8 +43,8 @@ def get_playtime(db, user_id: int, artist_id: int) -> int:
     playtime = 0
 
     tracks = (
-        db.query(models.DBTrack_Record)
-        .join(models.DBTrack, models.DBTrack_Record.TID == models.DBTrack.Id)
+        db.query(models.DBTrack)
+        .join(models.DBTrack_Record, models.DBTrack_Record.TID == models.DBTrack.Id)
         .filter(models.DBTrack_Record.UID == user_id)
         .filter(models.DBTrack.AID == artist_id)
         .all())

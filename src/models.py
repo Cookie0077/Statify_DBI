@@ -10,7 +10,7 @@ class DBUser(Base):
     Name = Column(String, index=True)
     Password = Column(String, index=True)
     Image = Column(String, index=True, nullable=True)
-    RID = Column(Integer, foreign_key="Role.Id", index=True)
+    RID = Column(Integer, ForeignKey("Role.Id"))
     Role_user = relationship("DBRole", back_populates="user_Roles")
     track_User = relationship("DBTrack_Record", back_populates="user_track_record")
     user_playlist = relationship("DBPlaylist", back_populates="playlist_user")
