@@ -8,6 +8,19 @@ import models
 from database import engine
 from python_client import sp
 from routers import artitst, playlist, track, track_Record, user
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s - %(message)s",
+    handlers=[
+        logging.FileHandler("api.log"),
+        logging.StreamHandler()
+    ]
+)
+
+logger = logging.getLogger(__name__)
+logger.info("Application started")
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -45,3 +58,5 @@ def callback():
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8888)
+
+# TODO: Fix this error - requests.exceptions.ReadTimeout: HTTPSConnectionPool(host='api.spotify.com', port=443): Read timed out. (read timeout=5)
