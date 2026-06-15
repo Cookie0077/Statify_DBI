@@ -31,10 +31,11 @@ class UserLogin(BaseModel):
     Name: str = Field(...)
     Password: str = Field(..., min_length=8, max_length=72)
 
-
-class UserResponse(BaseModel):
+class UserUpdate(BaseModel):
     Id: int = Field(...)
     Name: str = Field(...)
+
+class UserResponse(UserUpdate):
     Image: str | None
 
 
@@ -47,6 +48,13 @@ class UserAPI(BaseAPI):
     def register(self, user: UserLogin):
         logger.info("POST /user/register called")
         try:
+            if not self.db.query(models.DBRole).first():
+                self.db.add_all([
+                    models.DBRole(Id=1, Role="admin", CanGet=True, CanPost=True, CanDelete=True),
+                    models.DBRole(Id=2, Role="user", CanGet=True, CanDelete=False, CanPost=True),
+                ])
+                self.db.commit()
+                logger.info("Made roles if didn't exists")
             existing_user = self.db.query(DBUser).filter(DBUser.Name == user.Name).first()
             Spotify_user = self.sp.current_user()
             if existing_user:
@@ -54,10 +62,10 @@ class UserAPI(BaseAPI):
             hashed = hash_password(user.Password)
             image = Spotify_user["images"][0]["url"] if Spotify_user["images"] else None
 
-            db_user = DBUser(Name=user.Name, Password=hashed, Image=image,RID=1)
+            # TODO: Anhand von password und Username schauen ob es ein Admin oder User ist
+            db_user = DBUser(Name=user.Name, Password=hashed, Image=image,RID=2)
             self.db.add(db_user)
             self.db.flush()
-            # TODO: Anhand von password und Username schauen ob es ein Admin oder User ist
             db_role = models.DBRole(
                 Role="User",
                 CanGet=True,
@@ -85,16 +93,16 @@ class UserAPI(BaseAPI):
             raise HTTPException(status_code=500, detail="Error logging in user")
 
 
-    @router.put("/", response_model=UserResponse)
-    def update_user(self, db_user: DBUser):
+    @router.put("/", response_model=UserUpdate)
+    def update_user(self, db_user: UserUpdate):
         logger.info("Put /user/update called")
-        updated_user = self.get_or_404(self.db,db_user,db_user.Id)
+        updated_user = self.get_or_404(self.db,models.DBUser,db_user.Id)
         updated_user.Name=db_user.Name
-        updated_user.Image=db_user.Image
-        updated_user.RID=db_user.RID
         self.db.add(updated_user)
         self.db.commit()
         self.db.refresh(updated_user)
+
+        return UserUpdate(Id=updated_user.Id, Name=updated_user.Name)
 
 
     @router.delete("/logout/{user_id}", response_model=UserResponse)
@@ -104,7 +112,7 @@ class UserAPI(BaseAPI):
             db_user = self.db.query(DBUser).filter(DBUser.Id == user_id).first()
             self.db.delete(db_user)
             self.db.commit()
-            return UserResponse(Id=db_user.Id, Name=db_user.Name)
+            return UserResponse(Id=db_user.Id, Name=db_user.Name,Image=db_user.Image)
         except Exception as e:
             logger.error("Error logging out user: %s", str(e))
             raise HTTPException(status_code=500, detail="Error logging out user")
