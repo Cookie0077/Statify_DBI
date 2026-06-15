@@ -10,16 +10,17 @@ class DBUser(Base):
     Name = Column(String, index=True)
     Password = Column(String, index=True)
     Image = Column(String, index=True, nullable=True)
+    RID = Column(Integer, foreign_key="Role.Id", index=True)
     Role_user = relationship("DBRole", back_populates="user_Roles")
     track_User = relationship("DBTrack_Record", back_populates="user_track_record")
     user_playlist = relationship("DBPlaylist", back_populates="playlist_user")
+
 
 
 class DBRole(Base):
     __tablename__ = "Role"
     Id = Column(Integer, primary_key=True)
     Role = Column(String, index=True)
-    UID = Column(Integer, ForeignKey("Users.Id"), index=True)
     CanGet = Column(Boolean, index=True)
     CanPost = Column(Boolean, index=True)
     CanDelete = Column(Boolean, index=True)
@@ -30,10 +31,8 @@ class DBTrack_Record(Base):
     __tablename__ = "Track_Records"
     Id = Column(Integer, primary_key=True)
     Timestamp = Column(DateTime, index=True)
-    Duration = Column(Integer, index=True)
     UID = Column(Integer, ForeignKey("Users.Id"), index=True)
     TID = Column(Integer, ForeignKey("Track.Id"), index=True)
-
     user_track_record = relationship("DBUser", back_populates="track_User")
     track_track_record = relationship("DBTrack", back_populates="track_record")
 
@@ -45,6 +44,7 @@ class DBTrack(Base):
     Name = Column(String, index=True)
     Image = Column(String, index=True)
     URL = Column(String, index=True)
+    Duration = Column(Integer, index=True)
     AID = Column(Integer, ForeignKey("Artists.Id"))
 
     artist_track = relationship("DBArtist", back_populates="track_artist")

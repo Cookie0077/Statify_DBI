@@ -30,6 +30,7 @@ def make_track(db, track: dict, aid: int):
         Spotify_id=track["id"],
         Name=track["name"],
         Image=image,
+        Duration=track["duration_ms"],
         URL=track["external_urls"]["spotify"],
         AID=aid
     )

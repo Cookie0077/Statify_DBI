@@ -54,13 +54,12 @@ class UserAPI(BaseAPI):
             hashed = hash_password(user.Password)
             image = Spotify_user["images"][0]["url"] if Spotify_user["images"] else None
 
-            db_user = DBUser(Name=user.Name, Password=hashed, Image=image)
+            db_user = DBUser(Name=user.Name, Password=hashed, Image=image,RID=1)
             self.db.add(db_user)
             self.db.flush()
             # TODO: Anhand von password und Username schauen ob es ein Admin oder User ist
             db_role = models.DBRole(
                 Role="User",
-                UID=db_user.Id,
                 CanGet=True,
                 CanPost=True,
                 CanDelete=False)

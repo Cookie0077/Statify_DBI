@@ -105,7 +105,6 @@ class TrackRecordAPI(BaseAPI):
 
                 new_record = models.DBTrack_Record(
                     Timestamp=played_at,
-                    Duration=track["duration_ms"],
                     UID=user_id,
                     TID=db_track.Id
                 )
