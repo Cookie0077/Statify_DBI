@@ -84,6 +84,19 @@ class UserAPI(BaseAPI):
             logger.error("Error logging in user: %s", str(e))
             raise HTTPException(status_code=500, detail="Error logging in user")
 
+
+    @router.put("/", response_model=UserResponse)
+    def update_user(self, db_user: DBUser):
+        logger.info("Put /user/update called")
+        updated_user = self.get_or_404(self.db,db_user,db_user.Id)
+        updated_user.Name=db_user.Name
+        updated_user.Image=db_user.Image
+        updated_user.RID=db_user.RID
+        self.db.add(updated_user)
+        self.db.commit()
+        self.db.refresh(updated_user)
+
+
     @router.delete("/logout/{user_id}", response_model=UserResponse)
     def logout(self, user_id: int):
         logger.info("DELETE /user/logout/%s called", user_id)
