@@ -21,7 +21,6 @@ router = APIRouter(prefix="/track_record", tags=["Track-Record"])
 
 class TrackRecordCreate(BaseModel):
     Timestamp: datetime
-    Duration: int
     UID: int
     TID: int
 

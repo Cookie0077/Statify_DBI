@@ -1,15 +1,18 @@
+import logging
 from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi_restful.cbv import cbv
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.functions import count
+
 import helper
 import models
 from auth import verify_api_key
 from database import get_db
 from routers.base import BaseAPI
-import logging
+from routers.track_Record import TrackRecordDetailResponse
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +56,7 @@ class Artist(BaseAPI):
                 .limit(limit)
                 .all())
 
-            playtimes = [helper.get_playtime(self.db,user_id, artist.Id) for artist in artists]
+            playtimes = [helper.get_playtime(self.db, user_id, artist.Id) for artist in artists]
             result = []
 
             for i in range(len(artists)):
@@ -74,16 +77,39 @@ class Artist(BaseAPI):
             logger.error("Error syncing tracks for user %s: %s", user_id, str(e))
             raise HTTPException(status_code=500, detail="Error getting artists")
 
-    @router.delete("/{artist_id}", response_model=ArtistDetailResponse)
-    def delete_artist(self, artist_id: int):
-        logger.info("DELETE /artist/%s called", artist_id)
+    @router.get("/{user_id}/{artist_id}/tracks", response_model=list[TrackRecordDetailResponse])
+    def get_tracks_from_artist(self, user_id: int, artist_id: int,limit: Optional[int] = None):
+        logger.info("GET /artist/%s called", user_id)
         try:
-            deleted_artist = self.db.query(models.DBArtist).get(artist_id)
-            self.db.delete(deleted_artist)
-            self.db.commit()
-            return ArtistDetailResponse(Id=deleted_artist.Id, Name=deleted_artist.Name,
-                                        Spotify_id=deleted_artist.Spotify_id, Image=deleted_artist.Image,
-                                        URL=deleted_artist.URL)
+            tracks = (
+                self.db.query(
+                    models.DBTrack_Record,
+                    count(models.DBTrack_Record.TID).label("playcount")
+                )
+                .join(models.DBTrack, models.DBTrack.Id == models.DBTrack_Record.TID)
+                .filter(models.DBTrack_Record.UID == user_id)
+                .filter(models.DBTrack.AID == artist_id)
+                .group_by(models.DBTrack_Record.TID)
+                .order_by(count(models.DBTrack_Record.TID).desc())
+                .limit(limit)
+                .all()
+            )
+
+            result = []
+            for track, playcount in tracks:
+                result.append(TrackRecordDetailResponse(
+                    Id=int(track.Id),
+                    Timestamp=track.Timestamp,
+                    Duration=int(track.track_track_record.Duration),
+                    UID=int(track.UID),
+                    TID=int(track.TID),
+                    Track_Name=track.track_track_record.Name,
+                    Track_Image=track.track_track_record.Image,
+                    Artist_Name=track.track_track_record.artist_track.Name,
+                    URL=track.track_track_record.URL,
+                    Playcount=playcount,
+                ))
+            return result
+
         except Exception as e:
-            logger.error("Error deleting artist %s: %s", artist_id, str(e))
-            raise HTTPException(status_code=500, detail="Error deleting artist")
+            logger.error("Error getting tracks from artists for user %s: %s", user_id, str(e))
