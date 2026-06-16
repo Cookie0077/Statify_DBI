@@ -34,6 +34,7 @@ class TrackRecordDetailResponse(TrackRecordResponse):
     Track_Image: str
     Artist_Name: str
     URL: str
+    Duration: int
     Playcount: int
 
 
