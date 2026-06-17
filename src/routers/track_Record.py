@@ -124,8 +124,6 @@ class TrackRecordAPI(BaseAPI):
             logger.error("Error syncing tracks for user %s: %s", user_id, str(e))
             raise HTTPException(status_code=500, detail="Error getting tracks")
 
-
-    # TODO: Make GET per Day stats route
     @router.get("/{user_id}/playtime", response_model=list[UserPlaytimeResponse])
     def get_Users_playtime(self, user_id: int, limit: Optional[int] = 7):
         logger.info("GET /track_record/%s called", user_id)
