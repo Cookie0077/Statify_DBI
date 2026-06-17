@@ -1,17 +1,19 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 from collections import Counter
 
+from click import DateTime
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from fastapi_restful.cbv import cbv
 from sqlalchemy.orm import Session
-from sqlalchemy.sql.functions import count
+from sqlalchemy.sql.functions import count, func
 
 import models
 from auth import verify_api_key
 from database import get_db
+from models import DBTrack_Record
 from routers.base import BaseAPI
 import helper
 
@@ -37,6 +39,9 @@ class TrackRecordDetailResponse(TrackRecordResponse):
     Duration: int
     Playcount: int
 
+class UserPlaytimeResponse(BaseModel):
+    Playtime: int
+    Timestamp: datetime
 
 @cbv(router)
 class TrackRecordAPI(BaseAPI):
@@ -121,3 +126,33 @@ class TrackRecordAPI(BaseAPI):
 
 
     # TODO: Make GET per Day stats route
+    @router.get("/{user_id}/playtime", response_model=list[UserPlaytimeResponse])
+    def get_Users_playtime(self, user_id: int, limit: Optional[int] = 7):
+        logger.info("GET /track_record/%s called", user_id)
+        try:
+
+            result = []
+            for i in range(limit):
+                date = (datetime.now() - timedelta(days=i)).date()
+
+                total_playtime = (
+                    self.db.query(
+                        func.sum(models.DBTrack.Duration))
+                    .join(models.DBTrack_Record.track_track_record)
+                    .filter(func.date(models.DBTrack_Record.Timestamp) == date)
+                    .filter(models.DBTrack_Record.UID == user_id)
+                    .scalar()
+                )
+
+                result.append(
+                    UserPlaytimeResponse(
+                        Playtime=total_playtime or 0,
+                        Timestamp=date
+                    )
+                )
+
+            return result
+        except Exception as e:
+            logger.error("Error getting playtime: %s", str(e))
+            raise HTTPException(status_code=500, detail="Error getting playtime")
+
