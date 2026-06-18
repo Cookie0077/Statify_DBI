@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 import helper
 import models
-from auth import verify_api_key
+from auth import verify_api_key, get_User_id
 from database import get_db
 from models import DBPlaylist, DBPlaylist_Track
 from routers.base import BaseAPI
@@ -36,8 +36,9 @@ class PlaylistAPI(BaseAPI):
     db: Session = Depends(get_db)
     api_key: str = Depends(verify_api_key)
 
-    @router.post("/sync/{user_id}")
-    def GetPlaylistfromAPI(self, user_id: int):
+    @router.post("/sync")
+    def GetPlaylistfromAPI(self,user_id_str: str =Depends(get_User_id)):
+        user_id = int(user_id_str)
         logger.info("POST /playlist/sync/%s called", user_id)
         try:
             playlists = self.sp.current_user_playlists()
@@ -66,7 +67,7 @@ class PlaylistAPI(BaseAPI):
             raise HTTPException(status_code=500, detail="Error adding playlist")
 
     @router.post("/sync/{playlist_id}/tracks")
-    def ADD_GET_Tracks_from_Playlist(self, playlist_id: int):
+    def ADD_Tracks_from_Playlist(self, playlist_id: int):
         logger.info("POST /playlist/%s/tracks called", playlist_id)
         try:
             DBPlaylist = self.db.query(models.DBPlaylist).filter(models.DBPlaylist.Id == playlist_id).first()
@@ -120,8 +121,9 @@ class PlaylistAPI(BaseAPI):
         except Exception as e:
             logger.error("Error getting tracks: %s", str(e))
             raise HTTPException(status_code=500, detail="Error getting tracks")
-    @router.get("/{user_id}", response_model=list[PlalistResponse])
-    def Get_Playlists(self, user_id: int):
+    @router.get("/", response_model=list[PlalistResponse])
+    def Get_Playlists(self,user_id_str: str =Depends(get_User_id)):
+        user_id = int(user_id_str)
         logger.info("GET /playlist/%s called", user_id)
         try:
             playlists = self.db.query(models.DBPlaylist).filter(models.DBPlaylist.UID == user_id).all()

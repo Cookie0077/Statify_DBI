@@ -9,7 +9,7 @@ from sqlalchemy.sql.functions import count
 
 import helper
 import models
-from auth import verify_api_key
+from auth import verify_api_key, get_User_id
 from database import get_db
 from routers.base import BaseAPI
 from routers.track_Record import TrackRecordDetailResponse
@@ -41,8 +41,9 @@ class Artist(BaseAPI):
     db: Session = Depends(get_db)
     api_key: str = Depends(verify_api_key)
 
-    @router.get("/{user_id}", response_model=list[ArtistDetailResponse])
-    def get_artists(self, user_id: int, limit: Optional[int] = None):
+    @router.get("/", response_model=list[ArtistDetailResponse])
+    def get_artists(self, user_id_str: str = Depends(get_User_id), limit: Optional[int] = None):
+        user_id = int(user_id_str)
         logger.info("GET /artist/%s called", user_id)
         try:
             artists = (
@@ -77,8 +78,9 @@ class Artist(BaseAPI):
             logger.error("Error syncing tracks for user %s: %s", user_id, str(e))
             raise HTTPException(status_code=500, detail="Error getting artists")
 
-    @router.get("/{user_id}/{artist_id}/tracks", response_model=list[TrackRecordDetailResponse])
-    def get_tracks_from_artist(self, user_id: int, artist_id: int,limit: Optional[int] = None):
+    @router.get("/{artist_id}/tracks", response_model=list[TrackRecordDetailResponse])
+    def get_tracks_from_artist(self,artist_id: int,user_id_str: str = Depends(get_User_id),limit: Optional[int] = None):
+        user_id = int(user_id_str)
         logger.info("GET /artist/%s called", user_id)
         try:
             tracks = (

@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 import models
-from auth import verify_api_key
+from auth import verify_api_key,get_User_id
 from database import get_db
 from routers.base import BaseAPI
 
@@ -34,8 +34,9 @@ class TrackAPI(BaseAPI):
     db: Session = Depends(get_db)
     api_key: str = Depends(verify_api_key)
 
-    @router.get("/{user_id}/tracks", response_model=list[TrackResponse])
-    def get_all_tracks(self,user_id:int):
+    @router.get("/tracks", response_model=list[TrackResponse])
+    def get_all_tracks(self,user_id_str: str = Depends(get_User_id)):
+        user_id = int(user_id_str)
         logger.info("GET /track called")
         try:
             tracks = (

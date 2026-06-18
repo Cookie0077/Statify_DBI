@@ -1,3 +1,5 @@
+from passlib.context import CryptContext
+
 import models
 
 
@@ -61,3 +63,12 @@ def get_timestamp(db, user_id: int):
               .order_by(models.DBTrack_Record.Timestamp.desc())
               .first())
     return record.Timestamp if record else None
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+def hash_password(password: str) -> str:
+    return pwd_context.hash(password)
+
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return pwd_context.verify(plain_password, hashed_password)
+

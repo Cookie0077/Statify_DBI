@@ -1,19 +1,16 @@
 import logging
 from datetime import datetime, timedelta
 from typing import Optional
-from collections import Counter
-
-from click import DateTime
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from fastapi_restful.cbv import cbv
+from setuptools import depends
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.functions import count, func
 
 import models
-from auth import verify_api_key
+from auth import verify_api_key, get_User_id
 from database import get_db
-from models import DBTrack_Record
 from routers.base import BaseAPI
 import helper
 
@@ -48,8 +45,9 @@ class TrackRecordAPI(BaseAPI):
     db: Session = Depends(get_db)
     api_key: str = Depends(verify_api_key)
 
-    @router.get("/{user_id}", response_model=list[TrackRecordDetailResponse])
-    def get_all(self, user_id: int, limit: Optional[int] = None):
+    @router.get("/", response_model=list[TrackRecordDetailResponse])
+    def get_all(self, limit: Optional[int] = None, user_id_str: str = Depends(get_User_id)):
+        user_id = int(user_id_str)
         logger.info("GET /track_record/%s called", user_id)
         try:
             tracks = (
@@ -83,8 +81,9 @@ class TrackRecordAPI(BaseAPI):
             logger.error("Error getting tracks: %s", str(e))
             raise HTTPException(status_code=500, detail="Error getting tracks")
 
-    @router.post("/sync/{user_id}", response_model=list[TrackRecordResponse])
-    def sync_tracks_and_artists(self, user_id: int):
+    @router.post("/sync", response_model=list[TrackRecordResponse])
+    def sync_tracks_and_artists(self,user_id_str: str = Depends(get_User_id)):
+        user_id = int(user_id_str)
         logger.info("POST /track_record/sync/%s called", user_id)
         try:
             results = self.sp.current_user_recently_played(limit=50)
@@ -124,8 +123,9 @@ class TrackRecordAPI(BaseAPI):
             logger.error("Error syncing tracks for user %s: %s", user_id, str(e))
             raise HTTPException(status_code=500, detail="Error getting tracks")
 
-    @router.get("/{user_id}/playtime", response_model=list[UserPlaytimeResponse])
-    def get_Users_playtime(self, user_id: int, limit: Optional[int] = 7):
+    @router.get("/playtime", response_model=list[UserPlaytimeResponse])
+    def get_Users_playtime(self, user_id_str: str = Depends(get_User_id), limit: Optional[int] = 7):
+        user_id = int(user_id_str)
         logger.info("GET /track_record/%s called", user_id)
         try:
 

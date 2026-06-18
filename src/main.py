@@ -7,7 +7,7 @@ from starlette import status
 import models
 from database import engine
 from python_client import sp
-from routers import artitst, playlist, track, track_Record, user
+from routers import artitst, playlist, track, track_Record, user,token
 import logging
 
 logging.basicConfig(
@@ -31,7 +31,7 @@ app.include_router(track.router)
 
 app.include_router(artitst.router)
 app.include_router(playlist.router)
-
+app.include_router(token.router)
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
