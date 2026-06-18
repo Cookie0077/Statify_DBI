@@ -1,6 +1,6 @@
 from datetime import timedelta, datetime
 
-import jwt
+from jose import jwt
 from fastapi import Security, HTTPException, Depends
 from fastapi.security import APIKeyHeader, OAuth2PasswordBearer
 from sqlalchemy.orm import Session
