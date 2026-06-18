@@ -6,7 +6,6 @@ from fastapi.security import APIKeyHeader, OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
 import models
-from database import get_db
 from helper import verify_password
 
 api_key_header = APIKeyHeader(name='A-API-Key', auto_error=False)
