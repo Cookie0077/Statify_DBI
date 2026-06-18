@@ -48,7 +48,7 @@ class PlaylistAPI(BaseAPI):
                     continue
 
                 existing_playlist = self.db.query(models.DBPlaylist).filter(
-                    models.DBPlaylist.Spotify_id == playlist["id"]).first()
+                    models.DBPlaylist.Spotify_id == playlist["id"]).first() 
                 if not existing_playlist:
                     db_playlist = DBPlaylist(
                         Name=playlist["name"],

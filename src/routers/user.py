@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 import helper
 import models as models
-from auth import verify_api_key
+from auth import verify_api_key, get_User_id
 from database import get_db
 from models import DBUser
 from routers.base import BaseAPI
@@ -21,11 +21,11 @@ class UserLogin(BaseModel):
     Name: str = Field(...)
     Password: str = Field(..., min_length=8, max_length=72)
 
-class UserUpdate(BaseModel):
-    Id: int = Field(...)
+class UpdateUser(BaseModel):
     Name: str = Field(...)
 
-class UserResponse(UserUpdate):
+class UserResponse(UpdateUser):
+    Id: int = Field(...)
     Image: str | None
 
 
@@ -83,26 +83,53 @@ class UserAPI(BaseAPI):
             raise HTTPException(status_code=500, detail="Error logging in user")
 
 
-    @router.put("/", response_model=UserUpdate)
-    def update_user(self, db_user: UserUpdate):
+    @router.put("/", response_model=UserResponse)
+    def update_user(self, User:UpdateUser,user_id_str: str=Depends(get_User_id)):
+        user_id = int(user_id_str)
         logger.info("Put /user/update called")
-        updated_user = self.get_or_404(self.db,models.DBUser,db_user.Id)
-        updated_user.Name=db_user.Name
-        self.db.add(updated_user)
-        self.db.commit()
-        self.db.refresh(updated_user)
+        try:
+            existing_user = self.db.query(DBUser).filter(DBUser.Id == user_id).first()
+            if not existing_user:
+                raise HTTPException(status_code=404, detail="User not found")
 
-        return UserUpdate(Id=updated_user.Id, Name=updated_user.Name)
+            check_Username = self.db.query(DBUser).filter(User.Name == existing_user.Name).first()
+            if check_Username:
+                raise HTTPException(status_code=400, detail="Username already registered")
+            updated_user = self.get_or_404(self.db,models.DBUser,user_id)
+            updated_user.Name=User.Name
+            self.db.add(updated_user)
+            self.db.commit()
+            self.db.refresh(updated_user)
+
+            return UserResponse(Id=updated_user.Id, Name=updated_user.Name, Image=updated_user.Image)
+        except Exception as e:
+            logger.error("Error updating user: %s", str(e))
 
 
-    @router.delete("/logout/{user_id}", response_model=UserResponse)
-    def logout(self, user_id: int):
-        logger.info("DELETE /user/logout/%s called", user_id)
+    @router.delete("/")
+    def delete(self, user_id_str: str = Depends(get_User_id)):
+        user_id = int(user_id_str)
+        logger.info("DELETE /user/ %s called", user_id)
         try:
             db_user = self.db.query(DBUser).filter(DBUser.Id == user_id).first()
+            if not db_user:
+                raise HTTPException(status_code=404, detail="User not found")
+
+            self.db.query(models.DBTrack_Record).filter(models.DBTrack_Record.UID == user_id).delete(
+                synchronize_session=False)
+            deleted_playlist = self.db.query(models.DBPlaylist).filter(models.DBPlaylist.UID == user_id).all()
+            for playlist in deleted_playlist:
+                self.db.query(models.DBPlaylist_Track).filter(models.DBPlaylist_Track.PID == playlist.Id).delete(
+                synchronize_session=False)
+                self.db.delete(playlist)
+            self.db.query(models.DBRole).filter(models.DBRole.Id == db_user.RID).delete(synchronize_session=False)
             self.db.delete(db_user)
             self.db.commit()
-            return UserResponse(Id=db_user.Id, Name=db_user.Name,Image=db_user.Image)
+
+            return {"message": "User successfully deleted"}
+        except HTTPException:
+            raise
         except Exception as e:
-            logger.error("Error logging out user: %s", str(e))
-            raise HTTPException(status_code=500, detail="Error logging out user")
+            self.db.rollback()
+            logger.error("Error deleting user: %s", str(e))
+            raise HTTPException(status_code=500, detail="Error deleting user")
