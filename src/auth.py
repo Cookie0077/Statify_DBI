@@ -45,10 +45,8 @@ def authenticate_user(db: Session, username: str, password: str):
 
 def get_User_id(token: str = Depends(oauth2_scheme)):
     payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-    print("TOKEN:", token)
     userID: str = payload.get("sub")
     if userID is None:
-        print("userID none")
         raise HTTPException(status_code=401, detail="Not authorized")
 
     return userID
