@@ -115,3 +115,5 @@ class Artist(BaseAPI):
 
         except Exception as e:
             logger.error("Error getting tracks from artists for user %s: %s", user_id, str(e))
+
+

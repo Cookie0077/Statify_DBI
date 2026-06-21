@@ -41,7 +41,7 @@ class UserAPI(BaseAPI):
             if not self.db.query(models.DBRole).first():
                 self.db.add_all([
                     models.DBRole(Id=1, Role="admin", CanGet=True, CanPost=True, CanDelete=True),
-                    models.DBRole(Id=2, Role="user", CanGet=True, CanDelete=False, CanPost=True),
+                    models.DBRole(Id=2, Role="user", CanGet=True, CanDelete=True, CanPost=True),
                 ])
                 self.db.commit()
                 logger.info("Made roles if didn't exists")
@@ -51,18 +51,9 @@ class UserAPI(BaseAPI):
                 raise HTTPException(status_code=400, detail="Username bereits vergeben")
             hashed = helper.hash_password(user.Password)
             image = Spotify_user["images"][0]["url"] if Spotify_user["images"] else None
-
-            # TODO: Anhand von password und Username schauen ob es ein Admin oder User ist
             db_user = DBUser(Name=user.Name, Password=hashed, Image=image,RID=2)
             self.db.add(db_user)
             self.db.flush()
-            db_role = models.DBRole(
-                Role="User",
-                CanGet=True,
-                CanPost=True,
-                CanDelete=False)
-
-            self.db.add(db_role)
             self.db.commit()
             self.db.refresh(db_user)
             return db_user

@@ -66,22 +66,42 @@ class TrackAPI(BaseAPI):
         except Exception as e:
             logger.error("Error getting track %s: %s", track_id, str(e))
             raise HTTPException(status_code=500, detail="Error getting track")
+
     @router.delete("/{track_id}", response_model=TrackResponse)
-    def delete_track(self, track_id: int):
+    def delete_track(self, track_id: int, user_id_str: str = Depends(get_User_id)):
+        user_id = int(user_id_str)
         logger.info("DELETE /track/%s called", track_id)
         try:
+            user = self.get_or_404(self.db, models.DBUser, user_id)
+            if user.RID != 1:
+                raise HTTPException(status_code=401, detail=f"User {user_id} not eligible")
 
             deleted_track = self.db.query(models.DBTrack).filter(models.DBTrack.Id == track_id).first()
             if deleted_track is None:
                 raise HTTPException(status_code=404, detail=f"Track {track_id} not found")
+            track_data = TrackResponse(
+                Id=deleted_track.Id,
+                Name=deleted_track.Name,
+                Spotify_id=deleted_track.Spotify_id,
+                Image=deleted_track.Image,
+                URL=deleted_track.URL,
+                AID=deleted_track.AID,
+                Duration=deleted_track.Duration,
+            )
 
-            deleted_track_records = self.db.query(models.DBTrack_Record).filter(models.DBTrack_Record.TID == deleted_track.Id ).all()
+            deleted_track_records = (
+                self.db.query(models.DBTrack_Record)
+                .filter(models.DBTrack_Record.TID == deleted_track.Id)
+                .all()
+            )
             for record in deleted_track_records:
                 self.db.delete(record)
             self.db.delete(deleted_track)
             self.db.commit()
-            return TrackResponse(Id=deleted_track.Id, Name=deleted_track.Name, Spotify_id=deleted_track.Spotify_id,
-                                 Image=deleted_track.Image, URL=deleted_track.URL, AID=deleted_track.AID,Duration=deleted_track.Duration)
+
+            return track_data
+        except HTTPException:
+            raise
         except Exception as e:
             logger.error("Error deleting track %s: %s", track_id, str(e))
             raise HTTPException(status_code=500, detail="Error deleting track")
